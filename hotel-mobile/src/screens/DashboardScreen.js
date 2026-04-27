@@ -11,7 +11,7 @@ import DepartmentBanner from "../components/DepartmentBanner";
 const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 
 export default function DashboardScreen({ navigation }) {
-  const { roomsData, restaurantData, hrData, financeData, resetAllData } = useContext(DataContext);
+  const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
 
   const CA_Hebergement = roomsData.reduce((acc, row) => acc + (row.total || 0), 0);
@@ -29,8 +29,15 @@ export default function DashboardScreen({ navigation }) {
   const Autres_Revenus = financeData.filter(d => d.type === "Revenu").reduce((acc, row) => acc + (row.montant || 0), 0);
   const Autres_Couts = financeData.filter(d => d.type === "Coût").reduce((acc, row) => acc + (row.montant || 0), 0);
 
-  const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts;
+  // EBITDA calculates Revenue - (Payroll + Inventory Amort + Op Costs)
+  const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts - monthlyInventoryCost;
   const Marge = CA_Total > 0 ? ((EBITDA / CA_Total) * 100).toFixed(1) : 0;
+
+  // Alerts logic
+  const alerts = [];
+  if (parseFloat(Taux_Occ) > 85) alerts.push({ msg: "Occupation Exceptionnelle : Optimisez les tarifs", type: "success" });
+  if (parseFloat(Food_Cost) > 35) alerts.push({ msg: "Food Cost Élevé : Vérifiez les stocks cuisine", type: "warning" });
+  if (EBITDA < 0 && CA_Total > 0) alerts.push({ msg: "Alerte Rentabilité : EBITDA Négatif", type: "danger" });
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -51,13 +58,25 @@ export default function DashboardScreen({ navigation }) {
         icon={<FontAwesome5 name="hotel" size={26} color="#fff" />}
       />
 
+      {/* Alert Center */}
+      {alerts.length > 0 && (
+        <View style={styles.alertCenter}>
+          {alerts.map((a, i) => (
+            <View key={i} style={[styles.alertItem, { borderLeftColor: a.type==='danger'?'#e94560':a.type==='warning'?'#f0a500':'#00d47e' }]}>
+              <FontAwesome5 name={a.type==='danger'?'exclamation-circle':'info-circle'} size={14} color={colors.textMuted} />
+              <Text style={{ color: colors.text, marginLeft: 8, fontSize: 13 }}>{a.msg}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={styles.kpiContainer}>
         <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} isDark={isDark} />
         <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} isDark={isDark} />
         <KPI title="Marge OP" value={`${Marge} %`} isDark={isDark} />
         <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} isDark={isDark} />
         <KPI title="Food Cost" value={`${Food_Cost} %`} isDark={isDark} />
-        <KPI title="Coûts RH" value={`${Couts_RH.toLocaleString()} CFA`} isDark={isDark} />
+        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} isDark={isDark} />
       </View>
 
       <Text style={[styles.chartTitle, { color: colors.text }]}>Répartition du Chiffre d'Affaires</Text>
@@ -77,36 +96,16 @@ export default function DashboardScreen({ navigation }) {
       />
 
       <View style={styles.actions}>
-        <DynamicButton 
-           title="Hébergement" 
-           onPress={() => navigation.navigate("Hotel")} 
-           icon={<FontAwesome5 name="bed" size={16} color="#fff" />} 
-           width="48%" 
-           color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
-        />
-        <DynamicButton 
-           title="Restaurant" 
-           onPress={() => navigation.navigate("Restaurant")} 
-           icon={<MaterialIcons name="restaurant" size={16} color="#fff" />} 
-           width="48%" 
-           color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
-        />
+        <DynamicButton title="Hébergement" onPress={() => navigation.navigate("Hotel")} icon={<FontAwesome5 name="bed" size={16} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Restaurant" onPress={() => navigation.navigate("Restaurant")} icon={<MaterialIcons name="restaurant" size={16} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
       </View>
       <View style={styles.actions}>
-        <DynamicButton 
-           title="Ressources" 
-           onPress={() => navigation.navigate("HR")} 
-           icon={<FontAwesome5 name="users" size={16} color="#fff" />} 
-           width="48%" 
-           color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
-        />
-        <DynamicButton 
-           title="Finance" 
-           onPress={() => navigation.navigate("Finance")} 
-           icon={<FontAwesome5 name="chart-line" size={16} color="#fff" />} 
-           width="48%" 
-           color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
-        />
+        <DynamicButton title="Stock & Amort." onPress={() => navigation.navigate("Inventory")} icon={<FontAwesome5 name="archive" size={16} color="#fff" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
+        <DynamicButton title="Ressources" onPress={() => navigation.navigate("HR")} icon={<FontAwesome5 name="users" size={16} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+      </View>
+      <View style={styles.actions}>
+        <DynamicButton title="Finance" onPress={() => navigation.navigate("Finance")} icon={<FontAwesome5 name="chart-line" size={16} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Rapports PDF" onPress={() => navigation.navigate("Reports")} icon={<FontAwesome5 name="file-pdf" size={16} color="#fff" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
       </View>
 
       <View style={{ marginTop: 20 }}>
@@ -136,6 +135,8 @@ const styles = StyleSheet.create({
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
   chartTitle: { fontSize: 18, fontWeight: "600", marginBottom: 10, marginTop: 10 },
   actions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
+  alertCenter: { marginBottom: 20 },
+  alertItem: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, borderLeftWidth: 4, marginBottom: 8 },
   resetBtn: { padding: 15, borderRadius: 8, marginTop: 30, borderWidth: 1, alignItems: "center" },
   resetText: { fontWeight: "bold" }
 });

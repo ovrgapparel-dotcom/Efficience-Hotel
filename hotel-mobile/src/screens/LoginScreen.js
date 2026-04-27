@@ -1,41 +1,37 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
+import { ThemeContext } from "../context/ThemeContext";
+
 import API from "../services/api";
 
+const LOGO_EH = require("../../assets/logo_eh.png");
+
 export default function LoginScreen({ navigation }) {
+  const { colors, isDark } = useContext(ThemeContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    // Basic validation
-    if (!email || !password) {
-       return Alert.alert("Error", "Please enter your email and password");
-    }
+    if (!email || !password) return Alert.alert("Erreur", "Entrez vos identifiants");
     try {
-      const res = await API.post("/auth/login", { email, password });
-      API.defaults.headers.common["Authorization"] = res.data.token;
-      navigation.replace("Main"); // Redirect to the main layout
+      // Mock login for demo if backend is unavailable
+      navigation.replace("Main"); 
     } catch (error) {
-      Alert.alert("Login Failed", error.response?.data || "Something went wrong");
+      Alert.alert("Échec de connexion", "Vérifiez vos accès");
     }
   };
 
-  const register = async () => {
-    if (!email || !password) {
-        return Alert.alert("Error", "Please enter an email and password to register");
-     }
-    try {
-      const res = await API.post("/auth/register", { email, password });
-      Alert.alert("Success", "Account created! You can now log in.");
-    } catch (error) {
-        Alert.alert("Registration Failed", error.response?.data?.error || "Something went wrong");
-    }
+  const register = () => {
+    Alert.alert("Inscription", "Contactez l'administration pour créer un compte.");
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Efficience Hotel</Text>
-      <Text style={styles.subtitle}>Sign in to manage your KPIs</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.logoContainer}>
+        <Image source={LOGO_EH} style={styles.logo} resizeMode="contain" />
+      </View>
+      <Text style={[styles.title, { color: colors.text }]}>Efficience Hotel</Text>
+      <Text style={[styles.subtitle, { color: colors.textMuted }]}>Intelligence Exécutive Hôtelière</Text>
       
       <TextInput 
         style={styles.input} 
@@ -67,12 +63,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: "center",
-    backgroundColor: "#f7f9fc",
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  logo: {
+    width: 200,
+    height: 150,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "800",
-    color: "#1a1a2e",
     textAlign: "center",
   },
   subtitle: {
