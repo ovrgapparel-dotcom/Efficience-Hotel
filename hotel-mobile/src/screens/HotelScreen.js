@@ -1,93 +1,108 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
-import API from "../services/api";
+import React, { useState, useContext } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { DataContext } from "../context/DataContext";
+import KPI from "../components/KPI";
 
-export default function HotelScreen({ navigation }) {
-  // Rooms
-  const [rooms, setRooms] = useState("40");
-  const [occupancy, setOccupancy] = useState("0.65");
-  const [adr, setAdr] = useState("85");
+export default function HotelScreen() {
+  const { roomsData, addRoomRow } = useContext(DataContext);
 
-  // F&B
-  const [fbCovers, setFbCovers] = useState("1000");
-  const [fbCheck, setFbCheck] = useState("25");
-  const [fbCostPerc, setFbCostPerc] = useState("30");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [chambreNo, setChambreNo] = useState("");
+  const [type, setType] = useState("");
+  const [client, setClient] = useState("");
+  const [statut, setStatut] = useState("Occupée");
+  const [prixNuit, setPrixNuit] = useState("");
+  const [nuits, setNuits] = useState("1");
+  const [remarques, setRemarques] = useState("");
 
-  // Other Revenue
-  const [spaRevenue, setSpaRevenue] = useState("5000");
-  const [eventsRevenue, setEventsRevenue] = useState("12000");
-
-  // Variable Costs
-  const [payrollPerc, setPayrollPerc] = useState("25");
-  const [maintenance, setMaintenance] = useState("4000");
-  const [utilities, setUtilities] = useState("3000");
-
-  // Fixed Costs
-  const [rent, setRent] = useState("15000");
-  const [marketing, setMarketing] = useState("2000");
-  const [insurance, setInsurance] = useState("1000");
-
-  const handleSubmit = async () => {
-    try {
-      const payload = {
-        rooms: Number(rooms), occupancy: Number(occupancy), adr: Number(adr),
-        fbCovers: Number(fbCovers), fbCheck: Number(fbCheck), fbCostPerc: Number(fbCostPerc),
-        spaRevenue: Number(spaRevenue), eventsRevenue: Number(eventsRevenue),
-        payrollPerc: Number(payrollPerc), maintenance: Number(maintenance), utilities: Number(utilities),
-        rent: Number(rent), marketing: Number(marketing), insurance: Number(insurance)
-      };
-
-      const res = await API.post("/hotel/simulate-advanced", payload);
-      
-      navigation.navigate("Dashboard", { hotelData: res.data });
-    } catch (error) {
-       Alert.alert("Erreur", "Le calcul a échoué.");
-       console.log(error);
-    }
+  const handleAdd = () => {
+    if (!chambreNo || !prixNuit) return;
+    const total = Number(prixNuit) * Number(nuits);
+    addRoomRow({
+      id: Date.now().toString(),
+      date, chambreNo, type, client, statut, 
+      prixNuit: Number(prixNuit), nuits: Number(nuits), total, remarques
+    });
+    setChambreNo(""); setClient(""); setPrixNuit("");
   };
+
+  const totalRevenu = roomsData.reduce((acc, row) => acc + row.total, 0);
+  const totalNuits = roomsData.reduce((acc, row) => acc + row.nuits, 0);
+  const uniqueClients = new Set(roomsData.map(r => r.client).filter(c => c)).size;
+  const dms = uniqueClients > 0 ? (totalNuits / uniqueClients).toFixed(1) : 0;
+  
+  const TOTAL_CHAMBRES = 40; 
+  const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
+  const tauxOcc = ((chambresOccupees / TOTAL_CHAMBRES) * 100).toFixed(1);
+  const revpar = TOTAL_CHAMBRES > 0 ? (totalRevenu / TOTAL_CHAMBRES).toFixed(0) : 0;
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Projection P&L Avancée</Text>
-
-      <Text style={styles.sectionHeader}>Hébergement</Text>
-      <TextInput style={styles.input} placeholder="Nombre Chambres" value={rooms} onChangeText={setRooms} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Taux d'occupation (ex: 0.65)" value={occupancy} onChangeText={setOccupancy} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Prix Moyen (ADR)" value={adr} onChangeText={setAdr} keyboardType="numeric" />
-
-      <Text style={styles.sectionHeader}>Restauration (F&B)</Text>
-      <TextInput style={styles.input} placeholder="Couverts (mensuel)" value={fbCovers} onChangeText={setFbCovers} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Ticket Moyen" value={fbCheck} onChangeText={setFbCheck} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Food Cost (%)" value={fbCostPerc} onChangeText={setFbCostPerc} keyboardType="numeric" />
-
-      <Text style={styles.sectionHeader}>Autres Revenus (Mensuel)</Text>
-      <TextInput style={styles.input} placeholder="Revenus Spa" value={spaRevenue} onChangeText={setSpaRevenue} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Revenus Banquets/Events" value={eventsRevenue} onChangeText={setEventsRevenue} keyboardType="numeric" />
-
-      <Text style={styles.sectionHeader}>Coûts Opérationnels</Text>
-      <TextInput style={styles.input} placeholder="Masse Salariale (%)" value={payrollPerc} onChangeText={setPayrollPerc} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Coûts de Maintenance" value={maintenance} onChangeText={setMaintenance} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Utilitaires (Eau, Elec)" value={utilities} onChangeText={setUtilities} keyboardType="numeric" />
-
-      <Text style={styles.sectionHeader}>Coûts Fixes</Text>
-      <TextInput style={styles.input} placeholder="Loyer" value={rent} onChangeText={setRent} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Marketing" value={marketing} onChangeText={setMarketing} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Assurances" value={insurance} onChangeText={setInsurance} keyboardType="numeric" />
-
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Calculer le P&L Global</Text>
-      </TouchableOpacity>
+      <Text style={styles.title}>Hébergement - Saisie Quotidienne</Text>
       
+      <View style={styles.kpiContainer}>
+        <KPI title="Tx Occup." value={`${tauxOcc}%`} />
+        <KPI title="Revenu" value={`${totalRevenu.toLocaleString()} CFA`} />
+        <KPI title="RevPAR" value={`${Number(revpar).toLocaleString()} CFA`} />
+        <KPI title="DMS" value={`${dms} N`} />
+      </View>
+
+      <View style={styles.form}>
+        <Text style={styles.sectionHeader}>Nouvelle Entrée</Text>
+        <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+        <TextInput style={styles.input} placeholder="Chambre N°" value={chambreNo} onChangeText={setChambreNo} />
+        <TextInput style={styles.input} placeholder="Type (Standard, Suite...)" value={type} onChangeText={setType} />
+        <TextInput style={styles.input} placeholder="Nom du Client" value={client} onChangeText={setClient} />
+        <TextInput style={styles.input} placeholder="Statut" value={statut} onChangeText={setStatut} />
+        <TextInput style={styles.input} placeholder="Prix/Nuit (FCFA)" value={prixNuit} onChangeText={setPrixNuit} keyboardType="numeric" />
+        <TextInput style={styles.input} placeholder="Nuits" value={nuits} onChangeText={setNuits} keyboardType="numeric" />
+        <TextInput style={styles.input} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
+        <TouchableOpacity style={styles.button} onPress={handleAdd}>
+          <Text style={styles.buttonText}>Enregistrer la Nuitée</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionHeader}>Historique Quotidien</Text>
+      <ScrollView horizontal style={styles.tableScroll}>
+        <View>
+          <View style={styles.tableHeader}>
+            <Text style={styles.col}>Date</Text>
+            <Text style={styles.col}>Ch N°</Text>
+            <Text style={styles.col}>Client</Text>
+            <Text style={styles.col}>Statut</Text>
+            <Text style={styles.col}>Px/Nuit</Text>
+            <Text style={styles.col}>Nuits</Text>
+            <Text style={styles.col}>Total (FCFA)</Text>
+          </View>
+          {roomsData.map(row => (
+            <View key={row.id} style={styles.tableRow}>
+              <Text style={styles.col}>{row.date}</Text>
+              <Text style={styles.col}>{row.chambreNo}</Text>
+              <Text style={styles.col}>{row.client}</Text>
+              <Text style={styles.col}>{row.statut}</Text>
+              <Text style={styles.col}>{row.prixNuit}</Text>
+              <Text style={styles.col}>{row.nuits}</Text>
+              <Text style={styles.col}>{row.total}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
       <View style={{height: 50}} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f7f9fc" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, color: "#1a1a2e" },
-  sectionHeader: { fontSize: 16, fontWeight: "bold", color: "#e94560", marginTop: 15, marginBottom: 10 },
-  input: { backgroundColor: "#fff", height: 45, borderRadius: 8, paddingHorizontal: 15, marginBottom: 10, borderWidth: 1, borderColor: "#e1e1e1" },
-  button: { backgroundColor: "#0f3460", height: 50, borderRadius: 8, justifyContent: "center", alignItems: "center", marginTop: 20 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" }
+  container: { flex: 1, padding: 15, backgroundColor: "#f7f9fc" },
+  title: { fontSize: 20, fontWeight: "bold", color: "#1a1a2e", marginBottom: 15 },
+  kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
+  form: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 20 },
+  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15, color: "#e94560" },
+  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, marginBottom: 10 },
+  button: { backgroundColor: "#0f3460", padding: 15, borderRadius: 5, alignItems: "center", marginTop: 5 },
+  buttonText: { color: "#fff", fontWeight: "bold" },
+  tableScroll: { backgroundColor: "#fff", padding: 10, borderRadius: 8 },
+  tableHeader: { flexDirection: "row", borderBottomWidth: 2, borderColor: "#e94560", paddingBottom: 10, marginBottom: 5 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", paddingVertical: 10 },
+  col: { width: 100, textAlign: "center", fontSize: 12 }
 });
