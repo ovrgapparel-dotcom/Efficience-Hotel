@@ -36,7 +36,7 @@ function MainLayout() {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Main">
         <Stack.Screen 
           name="Login" 
           component={LoginScreen} 
