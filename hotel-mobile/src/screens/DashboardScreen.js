@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
-import { LineChart } from "react-native-chart-kit";
+import { LineChart, PieChart } from "react-native-chart-kit";
 import KPI from "../components/KPI";
 
 export default function DashboardScreen({ route, navigation }) {
@@ -12,10 +12,18 @@ export default function DashboardScreen({ route, navigation }) {
 
       <View style={styles.kpiContainer}>
         {hotelData ? (
-          <>
-            <KPI title="CA Hôtel" value={`${hotelData.CA} $`} />
-            <KPI title="RevPAR" value={`${hotelData.RevPAR} $`} />
-          </>
+          hotelData.summary ? (
+            <>
+              <KPI title="CA Total" value={`${Math.round(hotelData.revenues.totalRev)} $`} />
+              <KPI title="GOP" value={`${Math.round(hotelData.summary.gop)} $`} />
+              <KPI title="NOI (Bénéfice Net)" value={`${Math.round(hotelData.summary.noi)} $`} />
+            </>
+          ) : (
+            <>
+              <KPI title="CA Hôtel" value={`${hotelData.CA} $`} />
+              <KPI title="RevPAR" value={`${hotelData.RevPAR} $`} />
+            </>
+          )
         ) : (
           <Text style={styles.emptyText}>Aucune donnée Hôtel simuleé.</Text>
         )}
@@ -30,28 +38,50 @@ export default function DashboardScreen({ route, navigation }) {
         )}
       </View>
 
-      <Text style={styles.chartTitle}>Performance Growth</Text>
-      <LineChart
-        data={{
-          labels: ["Jan", "Fev", "Mar", "Avr"],
-          datasets: [{ data: [15000, 20000, 18000, 25000] }]
-        }}
-        width={Dimensions.get("window").width - 40}
-        height={220}
-        yAxisLabel="$"
-        chartConfig={{
-          backgroundColor: "#fff",
-          backgroundGradientFrom: "#f7f9fc",
-          backgroundGradientTo: "#e6eef5",
-          decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(15, 52, 96, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          style: { borderRadius: 16 },
-          propsForDots: { r: "6", strokeWidth: "2", stroke: "#0f3460" }
-        }}
-        bezier
-        style={{ marginVertical: 15, borderRadius: 16 }}
-      />
+      {hotelData && hotelData.summary ? (
+        <>
+          <Text style={styles.chartTitle}>Répartition des Revenus</Text>
+          <PieChart
+            data={[
+              { name: "Chambres", population: Math.round(hotelData.revenues.roomRev), color: "#0f3460", legendFontColor: "#7F7F7F", legendFontSize: 12 },
+              { name: "F&B", population: Math.round(hotelData.revenues.fbRev), color: "#e94560", legendFontColor: "#7F7F7F", legendFontSize: 12 },
+              { name: "Autres", population: Math.round(hotelData.revenues.spaRevenue + hotelData.revenues.eventsRevenue), color: "#f0a500", legendFontColor: "#7F7F7F", legendFontSize: 12 }
+            ]}
+            width={Dimensions.get("window").width - 40}
+            height={200}
+            chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
+            accessor={"population"}
+            backgroundColor={"transparent"}
+            paddingLeft={"0"}
+            absolute
+          />
+        </>
+      ) : (
+        <>
+          <Text style={styles.chartTitle}>Performance Growth</Text>
+          <LineChart
+            data={{
+              labels: ["Jan", "Fev", "Mar", "Avr"],
+              datasets: [{ data: [15000, 20000, 18000, 25000] }]
+            }}
+            width={Dimensions.get("window").width - 40}
+            height={220}
+            yAxisLabel="$"
+            chartConfig={{
+              backgroundColor: "#fff",
+              backgroundGradientFrom: "#f7f9fc",
+              backgroundGradientTo: "#e6eef5",
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(15, 52, 96, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              style: { borderRadius: 16 },
+              propsForDots: { r: "6", strokeWidth: "2", stroke: "#0f3460" }
+            }}
+            bezier
+            style={{ marginVertical: 15, borderRadius: 16 }}
+          />
+        </>
+      )}
       
       <View style={styles.actions}>
           <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate("Hotel")}>

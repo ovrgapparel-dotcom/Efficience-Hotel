@@ -20,6 +20,43 @@ app.post("/hotel/simulate", (req, res) => {
   res.json({ CA, RevPAR, chambres, taux, prix });
 });
 
+// Advanced Hotel P&L route
+app.post("/hotel/simulate-advanced", (req, res) => {
+  const {
+    rooms, occupancy, adr,
+    fbCovers, fbCheck, fbCostPerc,
+    spaRevenue, eventsRevenue,
+    payrollPerc, maintenance, utilities,
+    rent, marketing, insurance
+  } = req.body;
+
+  // Revenue Math (Monthly approx)
+  const roomRev = rooms * occupancy * adr * 30;
+  const fbRev = (fbCovers * fbCheck) * 30;
+  const totalRev = roomRev + fbRev + spaRevenue + eventsRevenue;
+
+  // Variable Cost Math
+  const payroll = totalRev * (payrollPerc / 100);
+  const fbCogs = fbRev * (fbCostPerc / 100);
+  const totalVarCosts = payroll + fbCogs + maintenance + utilities;
+
+  // Gross Operating Profit
+  const gop = totalRev - totalVarCosts;
+
+  // Fixed Cost Math
+  const totalFixedCosts = rent + marketing + insurance;
+
+  // Net Operating Income
+  const noi = gop - totalFixedCosts;
+
+  res.json({
+    revenues: { roomRev, fbRev, spaRevenue, eventsRevenue, totalRev },
+    variableCosts: { payroll, fbCogs, maintenance, utilities, totalVarCosts },
+    fixedCosts: { rent, marketing, insurance, totalFixedCosts },
+    summary: { gop, noi }
+  });
+});
+
 // Restaurant simulation calculation route
 app.post("/restaurant/simulate", (req, res) => {
   const { couverts, ticket, foodCost } = req.body;
