@@ -4,7 +4,7 @@ import { ThemeContext } from "../context/ThemeContext";
 
 import API from "../services/api";
 
-const LOGO_EH = require("../../assets/logo_eh.png");
+const LOGO_MINIMAL = require("../../assets/logo_eh_minimal.png");
 
 export default function LoginScreen({ navigation }) {
   const { colors, isDark } = useContext(ThemeContext);
@@ -28,10 +28,9 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
-        <Image source={LOGO_EH} style={styles.logo} resizeMode="contain" />
+        <Image source={LOGO_MINIMAL} style={styles.logo} resizeMode="contain" />
       </View>
-      <Text style={[styles.title, { color: colors.text }]}>Efficience Hotel</Text>
-      <Text style={[styles.subtitle, { color: colors.textMuted }]}>Intelligence Exécutive Hôtelière</Text>
+      <Text style={[styles.subtitle, { color: colors.textMuted, marginTop: -20 }]}>Intelligence Exécutive Hôtelière</Text>
       
       <TextInput 
         style={styles.input} 

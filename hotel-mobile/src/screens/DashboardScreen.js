@@ -45,7 +45,7 @@ export default function DashboardScreen({ navigation }) {
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       
       <View style={styles.topBar}>
-        <Text style={[styles.appName, { color: colors.text }]}>Efficience Hotel</Text>
+        <View style={{ width: 10 }} /> 
         <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
           <FontAwesome5 name={isDark ? "sun" : "moon"} size={20} color={colors.text} />
         </TouchableOpacity>
