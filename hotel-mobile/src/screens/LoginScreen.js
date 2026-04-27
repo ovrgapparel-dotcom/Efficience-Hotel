@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
 import { ThemeContext } from "../context/ThemeContext";
 
-const LOGO_MINIMAL = require("../../assets/logo_eh_minimal.png");
+const LOGO_OFFICIAL = require("../../assets/logo_eh_official.png");
 
 export default function LoginScreen({ navigation }) {
   const { colors, isDark } = useContext(ThemeContext);
@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
-        <Image source={LOGO_MINIMAL} style={styles.logo} resizeMode="contain" />
+        <Image source={LOGO_OFFICIAL} style={styles.logo} resizeMode="contain" />
       </View>
       <Text style={[styles.subtitle, { color: colors.textMuted, marginTop: -20 }]}>Intelligence Exécutive Hôtelière</Text>
       

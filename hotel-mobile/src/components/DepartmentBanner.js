@@ -3,7 +3,7 @@ import { View, Text, ImageBackground, StyleSheet, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../context/ThemeContext";
 
-const LOGO_MINIMAL = require("../../assets/logo_eh_minimal.png");
+const LOGO_OFFICIAL = require("../../assets/logo_eh_official.png");
 
 /**
  * DepartmentBanner
@@ -24,7 +24,7 @@ export default function DepartmentBanner({ image, gradientColors, title, subtitl
   const content = (
     <View style={[styles.overlay, { backgroundColor: overlayColor }]}>
       <View style={styles.brandingHeader}>
-         <Image source={LOGO_MINIMAL} style={styles.bannerLogo} resizeMode="contain" />
+         <Image source={LOGO_OFFICIAL} style={styles.bannerLogo} resizeMode="contain" />
       </View>
       {pattern && (
         <View style={styles.kenteStrip}>

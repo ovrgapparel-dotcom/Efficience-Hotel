@@ -7,6 +7,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
+import AppFooter from "../components/AppFooter";
 
 const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 
@@ -123,6 +124,7 @@ export default function DashboardScreen({ navigation }) {
       </TouchableOpacity>
       
       <View style={{height: 70}} />
+      <AppFooter />
     </ScrollView>
   );
 }
