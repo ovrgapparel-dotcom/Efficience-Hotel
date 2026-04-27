@@ -1,7 +1,9 @@
 import React, { useContext } from "react";
-import { View, Text, ImageBackground, StyleSheet } from "react-native";
+import { View, Text, ImageBackground, StyleSheet, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../context/ThemeContext";
+
+const LOGO_MINIMAL = require("../../assets/logo_eh_minimal.png");
 
 /**
  * DepartmentBanner
@@ -21,6 +23,9 @@ export default function DepartmentBanner({ image, gradientColors, title, subtitl
 
   const content = (
     <View style={[styles.overlay, { backgroundColor: overlayColor }]}>
+      <View style={styles.brandingHeader}>
+         <Image source={LOGO_MINIMAL} style={styles.bannerLogo} resizeMode="contain" />
+      </View>
       {pattern && (
         <View style={styles.kenteStrip}>
           {['#C25A00','#F0A500','#006B3F','#FFFFFF','#006B3F','#F0A500','#C25A00'].map((c, i) => (
@@ -67,6 +72,17 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
+  },
+  brandingHeader: {
+    position: "absolute",
+    top: 10,
+    right: 15,
+    width: 60,
+    height: 60,
+  },
+  bannerLogo: {
+    width: "100%",
+    height: "100%",
   },
   kenteStrip: {
     flexDirection: "row",
