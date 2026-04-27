@@ -49,6 +49,7 @@ export default function HotelScreen() {
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <DepartmentBanner
         image={BANNER}
+        gradientColors={["#7A3200", "#C25A00"]}
         title="Hébergement"
         subtitle="Gestion des Chambres & Nuitées"
         icon={<FontAwesome5 name="bed" size={26} color="#fff" />}

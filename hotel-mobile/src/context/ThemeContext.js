@@ -20,19 +20,34 @@ export const ThemeProvider = ({ children }) => {
     await AsyncStorage.setItem('@theme_dark', val.toString());
   };
 
+  // ── Ivoire / Abidjan Palette ──────────────────────────────────────────
+  // Light: warm cream canvas inspired by savane & sable d'Abidjan
+  // Dark:  deep ebony & earth inspired by la nuit sur la Lagune Ébrié
+  // Accent palette drawn from Ivory Coast flag (orange, white, vert) + kente gold
   const colors = {
-    background: isDark ? '#121212' : '#f7f9fc',
-    card: isDark ? '#1e1e1e' : '#fff',
-    text: isDark ? '#efefef' : '#1a1a2e',
-    textMuted: isDark ? '#aaa' : '#666',
-    border: isDark ? '#333' : '#eee',
-    primary: '#0f3460',
-    primaryHover: '#1f64b0',
-    secondary: '#e94560',
-    secondaryHover: '#ff6681',
-    inputBg: isDark ? '#2c2c2c' : '#fff',
-    inputText: isDark ? '#fff' : '#000',
-    chartLine: isDark ? '#ffffff' : '#0f3460',
+    // Backgrounds
+    background:  isDark ? '#12100E' : '#FFF8F0',
+    card:        isDark ? '#1E1A16' : '#FFFFFF',
+
+    // Text
+    text:        isDark ? '#F5E6D3' : '#2C1A0E',
+    textMuted:   isDark ? '#A08060' : '#7A5C3A',
+
+    // Borders
+    border:      isDark ? '#3A2A1A' : '#EAD9C5',
+
+    // Input
+    inputBg:     isDark ? '#2C2018' : '#FFFFFF',
+    inputText:   isDark ? '#F5E6D3' : '#2C1A0E',
+
+    // Brand colours — Ivoire Orange + Vert CI + Kente Gold
+    primary:       '#C25A00',   // Ivoire deep orange
+    primaryHover:  '#E07010',   // Lighter burnt orange on hover
+    secondary:     '#006B3F',   // Ivory Coast flag green
+    secondaryHover:'#00954F',   // Brighter green hover
+
+    // KPI accent gold
+    gold: '#F0A500',
   };
 
   return (

@@ -45,7 +45,7 @@ export default function HrScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <DepartmentBanner
-        image={BANNER}
+        gradientColors={["#8B6800", "#F0A500"]}
         title="Ressources Humaines"
         subtitle="Pointage & Masse Salariale"
         icon={<FontAwesome5 name="users" size={26} color="#fff" />}

@@ -38,10 +38,10 @@ export default function FinanceScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <DepartmentBanner
-        image={BANNER}
+        gradientColors={["#1A0A00", "#5A2800"]}
         title="Finance & Trésorerie"
         subtitle="Comptabilité & Flux de Fonds"
-        icon={<FontAwesome5 name="chart-line" size={26} color="#fff" />}
+        icon={<FontAwesome5 name="chart-line" size={26} color="#F0A500" />}
       />
       <View style={styles.kpiContainer}>
         <KPI title="Revenus Extra" value={`${totalRevenus.toLocaleString()} CFA`} />

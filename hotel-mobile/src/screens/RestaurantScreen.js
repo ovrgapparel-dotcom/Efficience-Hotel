@@ -44,7 +44,7 @@ export default function RestaurantScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <DepartmentBanner
-        image={BANNER}
+        gradientColors={["#004D2C", "#006B3F"]}
         title="Restaurant"
         subtitle="Suivi F&B – Couverts & Ventes"
         icon={<MaterialIcons name="restaurant" size={26} color="#fff" />}
