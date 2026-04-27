@@ -1,4 +1,15 @@
 {
   "buildCommand": "cd hotel-mobile && npm install && npx expo export --platform web --output-dir ../dist",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
 }
