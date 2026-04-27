@@ -1,10 +1,13 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { DataContext } from "../context/DataContext";
+import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
+import DynamicButton from "../components/DynamicButton";
 
 export default function HotelScreen() {
   const { roomsData, addRoomRow } = useContext(DataContext);
+  const { isDark, colors } = useContext(ThemeContext);
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [chambreNo, setChambreNo] = useState("");
@@ -36,9 +39,11 @@ export default function HotelScreen() {
   const tauxOcc = ((chambresOccupees / TOTAL_CHAMBRES) * 100).toFixed(1);
   const revpar = TOTAL_CHAMBRES > 0 ? (totalRevenu / TOTAL_CHAMBRES).toFixed(0) : 0;
 
+  const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Hébergement - Saisie Quotidienne</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Hébergement - Saisie Quotidienne</Text>
       
       <View style={styles.kpiContainer}>
         <KPI title="Tx Occup." value={`${tauxOcc}%`} />
@@ -47,42 +52,47 @@ export default function HotelScreen() {
         <KPI title="DMS" value={`${dms} N`} />
       </View>
 
-      <View style={styles.form}>
-        <Text style={styles.sectionHeader}>Nouvelle Entrée</Text>
-        <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
-        <TextInput style={styles.input} placeholder="Chambre N°" value={chambreNo} onChangeText={setChambreNo} />
-        <TextInput style={styles.input} placeholder="Type (Standard, Suite...)" value={type} onChangeText={setType} />
-        <TextInput style={styles.input} placeholder="Nom du Client" value={client} onChangeText={setClient} />
-        <TextInput style={styles.input} placeholder="Statut" value={statut} onChangeText={setStatut} />
-        <TextInput style={styles.input} placeholder="Prix/Nuit (FCFA)" value={prixNuit} onChangeText={setPrixNuit} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Nuits" value={nuits} onChangeText={setNuits} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
-        <TouchableOpacity style={styles.button} onPress={handleAdd}>
-          <Text style={styles.buttonText}>Enregistrer la Nuitée</Text>
-        </TouchableOpacity>
+      <View style={[styles.form, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Nouvelle Entrée</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Chambre N°" value={chambreNo} onChangeText={setChambreNo} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Type (Standard, Suite...)" value={type} onChangeText={setType} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nom du Client" value={client} onChangeText={setClient} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Statut" value={statut} onChangeText={setStatut} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Prix/Nuit (FCFA)" value={prixNuit} onChangeText={setPrixNuit} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nuits" value={nuits} onChangeText={setNuits} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
+        
+        <View style={{ marginTop: 10 }}>
+          <DynamicButton 
+            title="Enregistrer la Nuitée" 
+            onPress={handleAdd} 
+            color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
+          />
+        </View>
       </View>
 
-      <Text style={styles.sectionHeader}>Historique Quotidien</Text>
-      <ScrollView horizontal style={styles.tableScroll}>
+      <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Historique Quotidien</Text>
+      <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>
         <View>
-          <View style={styles.tableHeader}>
-            <Text style={styles.col}>Date</Text>
-            <Text style={styles.col}>Ch N°</Text>
-            <Text style={styles.col}>Client</Text>
-            <Text style={styles.col}>Statut</Text>
-            <Text style={styles.col}>Px/Nuit</Text>
-            <Text style={styles.col}>Nuits</Text>
-            <Text style={styles.col}>Total (FCFA)</Text>
+          <View style={[styles.tableHeader, { borderColor: colors.secondary }]}>
+            <Text style={[styles.col, { color: colors.text }]}>Date</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Ch N°</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Client</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Statut</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Px/Nuit</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Nuits</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Total (FCFA)</Text>
           </View>
           {roomsData.map(row => (
-            <View key={row.id} style={styles.tableRow}>
-              <Text style={styles.col}>{row.date}</Text>
-              <Text style={styles.col}>{row.chambreNo}</Text>
-              <Text style={styles.col}>{row.client}</Text>
-              <Text style={styles.col}>{row.statut}</Text>
-              <Text style={styles.col}>{row.prixNuit}</Text>
-              <Text style={styles.col}>{row.nuits}</Text>
-              <Text style={styles.col}>{row.total}</Text>
+            <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.date}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.chambreNo}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.client}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.statut}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.prixNuit}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.nuits}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.total}</Text>
             </View>
           ))}
         </View>
@@ -93,16 +103,14 @@ export default function HotelScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: "#f7f9fc" },
-  title: { fontSize: 20, fontWeight: "bold", color: "#1a1a2e", marginBottom: 15 },
+  container: { flex: 1, padding: 15 },
+  title: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
-  form: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 20 },
-  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15, color: "#e94560" },
-  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, marginBottom: 10 },
-  button: { backgroundColor: "#0f3460", padding: 15, borderRadius: 5, alignItems: "center", marginTop: 5 },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  tableScroll: { backgroundColor: "#fff", padding: 10, borderRadius: 8 },
-  tableHeader: { flexDirection: "row", borderBottomWidth: 2, borderColor: "#e94560", paddingBottom: 10, marginBottom: 5 },
-  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", paddingVertical: 10 },
+  form: { padding: 15, borderRadius: 8, marginBottom: 20 },
+  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  input: { borderWidth: 1, padding: 10, borderRadius: 5, marginBottom: 10 },
+  tableScroll: { padding: 10, borderRadius: 8 },
+  tableHeader: { flexDirection: "row", borderBottomWidth: 2, paddingBottom: 10, marginBottom: 5 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, paddingVertical: 10 },
   col: { width: 100, textAlign: "center", fontSize: 12 }
 });

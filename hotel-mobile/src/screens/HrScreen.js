@@ -1,10 +1,13 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { DataContext } from "../context/DataContext";
+import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
+import DynamicButton from "../components/DynamicButton";
 
 export default function HrScreen() {
   const { hrData, addHrRow, roomsData, restaurantData } = useContext(DataContext);
+  const { isDark, colors } = useContext(ThemeContext);
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [nom, setNom] = useState("");
@@ -33,9 +36,11 @@ export default function HrScreen() {
   const productivite = heuresTotales > 0 ? (CA_TOTAL / heuresTotales).toFixed(0) : 0;
   const ratioMasse = CA_TOTAL > 0 ? ((coutTotalMO / CA_TOTAL) * 100).toFixed(1) : 0;
 
+  const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>RH - Pointage Quotidien</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>RH - Pointage Quotidien</Text>
       
       <View style={styles.kpiContainer}>
         <KPI title="Coût Total MO" value={`${coutTotalMO.toLocaleString()} CFA`} />
@@ -44,38 +49,43 @@ export default function HrScreen() {
         <KPI title="Ratio MS" value={`${ratioMasse} %`} />
       </View>
 
-      <View style={styles.form}>
-        <Text style={styles.sectionHeader}>Nouvelle Entrée</Text>
-        <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
-        <TextInput style={styles.input} placeholder="Nom de l'employé" value={nom} onChangeText={setNom} />
-        <TextInput style={styles.input} placeholder="Poste (Réception, Ménage...)" value={poste} onChangeText={setPoste} />
-        <TextInput style={styles.input} placeholder="Heures travaillées" value={heures} onChangeText={setHeures} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Taux horaire (FCFA)" value={taux} onChangeText={setTaux} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
-        <TouchableOpacity style={styles.button} onPress={handleAdd}>
-          <Text style={styles.buttonText}>Enregistrer Pointage</Text>
-        </TouchableOpacity>
+      <View style={[styles.form, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Nouvelle Entrée</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nom de l'employé" value={nom} onChangeText={setNom} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Poste (Réception, Ménage...)" value={poste} onChangeText={setPoste} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Heures travaillées" value={heures} onChangeText={setHeures} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Taux horaire (FCFA)" value={taux} onChangeText={setTaux} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
+        
+        <View style={{ marginTop: 10 }}>
+          <DynamicButton 
+            title="Enregistrer Pointage" 
+            onPress={handleAdd} 
+            color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
+          />
+        </View>
       </View>
 
-      <Text style={styles.sectionHeader}>Historique Quotidien</Text>
-      <ScrollView horizontal style={styles.tableScroll}>
+      <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Historique Quotidien</Text>
+      <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>
         <View>
-          <View style={styles.tableHeader}>
-            <Text style={styles.col}>Date</Text>
-            <Text style={styles.col}>Employé</Text>
-            <Text style={styles.col}>Poste</Text>
-            <Text style={styles.col}>Heures</Text>
-            <Text style={styles.col}>Taux</Text>
-            <Text style={styles.col}>Salaire J.</Text>
+          <View style={[styles.tableHeader, { borderColor: colors.secondary }]}>
+            <Text style={[styles.col, { color: colors.text }]}>Date</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Employé</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Poste</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Heures</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Taux</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Salaire J.</Text>
           </View>
           {hrData.map(row => (
-            <View key={row.id} style={styles.tableRow}>
-              <Text style={styles.col}>{row.date}</Text>
-              <Text style={styles.col}>{row.nom}</Text>
-              <Text style={styles.col}>{row.poste}</Text>
-              <Text style={styles.col}>{row.heures}</Text>
-              <Text style={styles.col}>{row.taux}</Text>
-              <Text style={styles.col}>{row.salaire}</Text>
+            <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.date}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.nom}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.poste}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.heures}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.taux}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.salaire}</Text>
             </View>
           ))}
         </View>
@@ -86,16 +96,14 @@ export default function HrScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: "#f7f9fc" },
-  title: { fontSize: 20, fontWeight: "bold", color: "#1a1a2e", marginVertical: 15 },
+  container: { flex: 1, padding: 15 },
+  title: { fontSize: 20, fontWeight: "bold", marginVertical: 15 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
-  form: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 20 },
-  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15, color: "#e94560" },
-  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, marginBottom: 10 },
-  button: { backgroundColor: "#0f3460", padding: 15, borderRadius: 5, alignItems: "center", marginTop: 5 },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  tableScroll: { backgroundColor: "#fff", padding: 10, borderRadius: 8 },
-  tableHeader: { flexDirection: "row", borderBottomWidth: 2, borderColor: "#e94560", paddingBottom: 10, marginBottom: 5 },
-  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", paddingVertical: 10 },
+  form: { padding: 15, borderRadius: 8, marginBottom: 20 },
+  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  input: { borderWidth: 1, padding: 10, borderRadius: 5, marginBottom: 10 },
+  tableScroll: { padding: 10, borderRadius: 8 },
+  tableHeader: { flexDirection: "row", borderBottomWidth: 2, paddingBottom: 10, marginBottom: 5 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, paddingVertical: 10 },
   col: { width: 100, textAlign: "center", fontSize: 12 }
 });

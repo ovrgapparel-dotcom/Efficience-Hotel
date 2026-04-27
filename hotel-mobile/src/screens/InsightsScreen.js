@@ -1,13 +1,20 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert, Platform } from "react-native";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import { DataContext } from "../context/DataContext";
+import { ThemeContext } from "../context/ThemeContext";
+import DynamicButton from "../components/DynamicButton";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { generateHotelReport } from "../utils/reportGenerator";
 
 export default function InsightsScreen() {
   const { roomsData, restaurantData, hrData, financeData } = useContext(DataContext);
+  const { isDark, colors } = useContext(ThemeContext);
 
-  // 1. Data Aggregation
+  // --- Data Aggregation ---
   const CA_Hebergement = roomsData.reduce((acc, row) => acc + (row.total || 0), 0);
-  const totalChambres = 40; 
+  const totalChambres = 40;
   const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
   const Taux_Occ = totalChambres > 0 ? ((chambresOccupees / totalChambres) * 100).toFixed(1) : 0;
 
@@ -16,121 +23,143 @@ export default function InsightsScreen() {
   const Food_Cost = CA_Restaurant > 0 ? ((Cout_Mat / CA_Restaurant) * 100).toFixed(1) : 0;
 
   const CA_Total = CA_Hebergement + CA_Restaurant;
-
   const Couts_RH = hrData.reduce((acc, row) => acc + (row.salaire || 0), 0);
   const ratioMasse = CA_Total > 0 ? ((Couts_RH / CA_Total) * 100).toFixed(1) : 0;
 
   const Autres_Revenus = financeData.filter(d => d.type === "Revenu").reduce((acc, row) => acc + (row.montant || 0), 0);
   const Autres_Couts = financeData.filter(d => d.type === "Coût").reduce((acc, row) => acc + (row.montant || 0), 0);
-
   const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts;
   const Marge = CA_Total > 0 ? ((EBITDA / CA_Total) * 100).toFixed(1) : 0;
 
-  // 2. Extrapolation (Monthly Projection based on daily entries)
-  // To avoid dividing by zero if there's no data, we assume at least 1 day recorded.
-  let daysRecorded = new Set([...roomsData.map(d=>d.date), ...restaurantData.map(d=>d.date)]).size;
-  if(daysRecorded === 0) daysRecorded = 1;
-  
+  // --- Projections ---
+  let daysRecorded = new Set([...roomsData.map(d => d.date), ...restaurantData.map(d => d.date)]).size;
+  if (daysRecorded === 0) daysRecorded = 1;
   const projectedMonthlyCA = (CA_Total / daysRecorded) * 30;
   const projectedMonthlyEBITDA = (EBITDA / daysRecorded) * 30;
 
-  // 3. Logic Engine & Target Rules
-  const insights = [];
+  // --- PDF Export ---
+  const handleExportPDF = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const html = generateHotelReport({ roomsData, restaurantData, hrData, financeData, date: today });
 
-  if (chambresOccupees === 0 && CA_Restaurant === 0) {
-     insights.push({ title: "Aucune donnée", text: "Veuillez entrer des données dans les modules Hébergement ou Restaurant.", type: "neutral" });
-  } else {
-      // Rule 1: Occupancy Target 65%
-      if (Taux_Occ >= 65) {
-        insights.push({ title: "🌟 Excellente Occupation", text: `Taux à ${Taux_Occ}%. Continuez votre gestion tarifaire dynamique (Yield Management).`, type: "good" });
+      if (Platform.OS === 'web') {
+        // Web: open print dialog
+        const win = window.open('', '_blank');
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        win.print();
       } else {
-        insights.push({ title: "⚠️ Occupation Faible", text: `Taux à ${Taux_Occ}% (Cible: >65%). Recommandation: Lancez des campagnes marketing, proposez des forfaits ou réajustez l'ADR.`, type: "bad" });
+        // Mobile: generate PDF and share it
+        const { uri } = await Print.printToFileAsync({ html, base64: false });
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: `Rapport Hôtelier ${today}`,
+            UTI: 'com.adobe.pdf'
+          });
+        } else {
+          Alert.alert("PDF généré", `Fichier sauvegardé à: ${uri}`);
+        }
       }
+    } catch (err) {
+      Alert.alert("Erreur", "Impossible de générer le rapport PDF: " + err.message);
+    }
+  };
 
-      // Rule 2: Food Cost Target 30%
-      if (CA_Restaurant > 0) {
-          if (Food_Cost <= 30) {
-              insights.push({ title: "🌟 Food Cost Optimal", text: `Food Cost très rentable à ${Food_Cost}%.`, type: "good" });
-          } else {
-              insights.push({ title: "🚨 Alerte Food Cost", text: `Food cost trop élevé à ${Food_Cost}% (Cible <30%). Recommandation: Auditez les gaspillages (démarques), renégociez avec les fournisseurs, et limitez les portions.`, type: "bad" });
-          }
-      }
+  // --- Logic Engine ---
+  const insights = [];
+  if (chambresOccupees === 0 && CA_Restaurant === 0) {
+    insights.push({ title: "Aucune donnée", text: "Veuillez entrer des données dans les modules.", type: "neutral" });
+  } else {
+    if (Taux_Occ >= 65) insights.push({ title: "🌟 Excellente Occupation", text: `Taux à ${Taux_Occ}%. Continuez votre gestion tarifaire dynamique.`, type: "good" });
+    else insights.push({ title: "⚠️ Occupation Faible", text: `Taux à ${Taux_Occ}% (Cible: >65%). Lancez des campagnes marketing.`, type: "bad" });
 
-      // Rule 3: Payroll / Masse Salariale Target 35%
-      if (Couts_RH > 0) {
-          if (ratioMasse <= 35) {
-              insights.push({ title: "🌟 Masse Salariale Saine", text: `Le ratio au CA est de ${ratioMasse}%.`, type: "good" });
-          } else {
-              insights.push({ title: "⚠️ Surchauffe Salariale", text: `Masse salariale à ${ratioMasse}% du CA (Cible <35%). Recommandation: Évitez les heures supplémentaires inutiles et optimisez le planning inter-équipes.`, type: "bad" });
-          }
-      }
-
-      // Rule 4: EBITDA Health
-      if (CA_Total > 0) {
-          if (Marge >= 25) {
-              insights.push({ title: "🏆 Super Rentabilité", text: `Votre marge EBE (EBITDA) est de ${Marge}%. Gestion hautement efficace.`, type: "good" });
-          } else if (Marge > 0) {
-              insights.push({ title: "⚠️ Marge à surveiller", text: `Marge de ${Marge}% (Cible: >25%). Recommandation: Réduisez les coûts fixes et vendez plus d'options à marge forte (chambres suites, boissons).`, type: "neutral" });
-          } else {
-              insights.push({ title: "🚨 URGENCE: Secteur Déficitaire", text: `Vos coûts dépassent vos revenus (Marge de ${Marge}%). Bloquez immédiatement les dépenses discrétionnaires!`, type: "critical" });
-          }
-      }
+    if (CA_Restaurant > 0) {
+      if (Food_Cost <= 30) insights.push({ title: "🌟 Food Cost Optimal", text: `Food Cost très rentable à ${Food_Cost}%.`, type: "good" });
+      else insights.push({ title: "🚨 Alerte Food Cost", text: `Food cost à ${Food_Cost}% (Cible <30%). Auditez les gaspillages.`, type: "bad" });
+    }
+    if (Couts_RH > 0) {
+      if (ratioMasse <= 35) insights.push({ title: "🌟 Masse Salariale Saine", text: `Le ratio au CA est de ${ratioMasse}%.`, type: "good" });
+      else insights.push({ title: "⚠️ Surchauffe Salariale", text: `Masse salariale à ${ratioMasse}% (Cible <35%). Optimisez le planning.`, type: "bad" });
+    }
+    if (CA_Total > 0) {
+      if (Marge >= 25) insights.push({ title: "🏆 Super Rentabilité", text: `Votre marge EBITDA est de ${Marge}%.`, type: "good" });
+      else if (Marge > 0) insights.push({ title: "⚠️ Marge à surveiller", text: `Marge de ${Marge}% (Cible: >25%). Réduisez les coûts fixes.`, type: "neutral" });
+      else insights.push({ title: "🚨 URGENCE: Secteur Déficitaire", text: `Coûts dépassent revenus (${Marge}%). Bloquez les dépenses!`, type: "critical" });
+    }
   }
 
-  const renderIcon = (type) => {
-      switch(type) {
-          case 'good': return { borderColor: '#4CAF50', color: '#4CAF50' };
-          case 'bad': return { borderColor: '#FF9800', color: '#FF9800' };
-          case 'critical': return { borderColor: '#F44336', color: '#F44336' };
-          default: return { borderColor: '#2196F3', color: '#2196F3' };
-      }
+  const styleForType = (type) => {
+    switch (type) {
+      case 'good': return { borderColor: '#4CAF50', color: '#4CAF50' };
+      case 'bad': return { borderColor: '#FF9800', color: '#FF9800' };
+      case 'critical': return { borderColor: '#F44336', color: '#F44336' };
+      default: return { borderColor: colors.primary, color: colors.primary };
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Tableau de Bord Exécutif</Text>
-      <Text style={styles.subtitle}>Intelligence d'Affaires & IA</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header, { color: colors.text }]}>Tableau de Bord Exécutif</Text>
+      <Text style={[styles.subtitle, { color: colors.textMuted }]}>Intelligence d'Affaires & IA Prédictive</Text>
 
-      <Text style={styles.sectionTitle}>🔮 Projections sur 30 Jours</Text>
-      <View style={styles.projectionBox}>
-         <View style={styles.projRow}>
-            <Text style={styles.projLabel}>CA Mensuel Projeté</Text>
-            <Text style={styles.projValue}>{Math.round(projectedMonthlyCA).toLocaleString()} CFA</Text>
-         </View>
-         <View style={[styles.projRow, { borderBottomWidth: 0, marginTop: 10 }]}>
-            <Text style={styles.projLabel}>EBITDA Mensuel Projeté</Text>
-            <Text style={[styles.projValue, { color: projectedMonthlyEBITDA >= 0 ? 'green' : 'red'}]}>
-              {Math.round(projectedMonthlyEBITDA).toLocaleString()} CFA
-            </Text>
-         </View>
+      {/* PDF Export Button */}
+      <View style={{ marginBottom: 20 }}>
+        <DynamicButton
+          title="Exporter Rapport PDF"
+          onPress={handleExportPDF}
+          icon={<FontAwesome5 name="file-pdf" size={16} color="#fff" />}
+          color={colors.secondary}
+          hoverColor={colors.secondaryHover}
+          isDark={isDark}
+        />
       </View>
 
-      <Text style={styles.sectionTitle}>💡 Alertes & Recommandations</Text>
+      {/* Projections */}
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>🔮 Projections sur 30 Jours</Text>
+      <View style={[styles.projectionBox, { backgroundColor: colors.card }]}>
+        <View style={[styles.projRow, { borderColor: colors.border }]}>
+          <Text style={[styles.projLabel, { color: colors.text }]}>CA Mensuel Projeté</Text>
+          <Text style={[styles.projValue, { color: colors.primary }]}>{Math.round(projectedMonthlyCA).toLocaleString()} CFA</Text>
+        </View>
+        <View style={[styles.projRow, { borderBottomWidth: 0, marginTop: 10 }]}>
+          <Text style={[styles.projLabel, { color: colors.text }]}>EBITDA Mensuel Projeté</Text>
+          <Text style={[styles.projValue, { color: projectedMonthlyEBITDA >= 0 ? '#4CAF50' : '#ff6681' }]}>
+            {Math.round(projectedMonthlyEBITDA).toLocaleString()} CFA
+          </Text>
+        </View>
+      </View>
+
+      {/* Recommendations */}
+      <Text style={[styles.sectionTitle, { color: colors.secondary }]}>💡 Alertes & Recommandations</Text>
       {insights.map((item, index) => {
-          const styleType = renderIcon(item.type);
-          return (
-            <View key={index} style={[styles.insightCard, { borderLeftColor: styleType.borderColor }]}>
-               <Text style={[styles.cardTitle, { color: styleType.color }]}>{item.title}</Text>
-               <Text style={styles.cardText}>{item.text}</Text>
-            </View>
-          )
+        const st = styleForType(item.type);
+        return (
+          <View key={index} style={[styles.insightCard, { backgroundColor: colors.card, borderLeftColor: st.borderColor }]}>
+            <Text style={[styles.cardTitle, { color: st.color }]}>{item.title}</Text>
+            <Text style={[styles.cardText, { color: colors.textMuted }]}>{item.text}</Text>
+          </View>
+        );
       })}
-      
-      <View style={{height: 70}} />
+
+      <View style={{ height: 70 }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f7f9fc", padding: 20 },
-  header: { fontSize: 24, fontWeight: "bold", color: "#1a1a2e" },
-  subtitle: { fontSize: 16, color: "#666", marginBottom: 25 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#e94560", marginBottom: 15, marginTop: 10 },
-  projectionBox: { backgroundColor: "#fff", padding: 20, borderRadius: 10, marginBottom: 30, elevation: 2 },
-  projRow: { flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 1, borderColor: "#eee", paddingBottom: 10 },
-  projLabel: { fontSize: 16, color: "#333", fontWeight: "600" },
-  projValue: { fontSize: 16, fontWeight: "bold", color: "#0f3460" },
-  insightCard: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 15, borderLeftWidth: 5, elevation: 2 },
-  cardTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
-  cardText: { fontSize: 14, color: "#444", lineHeight: 20 }
+  container: { flex: 1, padding: 20 },
+  header: { fontSize: 24, fontWeight: "bold" },
+  subtitle: { fontSize: 14, marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12, marginTop: 5 },
+  projectionBox: { padding: 20, borderRadius: 10, marginBottom: 24, elevation: 2 },
+  projRow: { flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 1, paddingBottom: 10 },
+  projLabel: { fontSize: 15, fontWeight: "600" },
+  projValue: { fontSize: 15, fontWeight: "bold" },
+  insightCard: { padding: 15, borderRadius: 8, marginBottom: 14, borderLeftWidth: 5, elevation: 2 },
+  cardTitle: { fontSize: 15, fontWeight: "bold", marginBottom: 6 },
+  cardText: { fontSize: 13, lineHeight: 20 }
 });

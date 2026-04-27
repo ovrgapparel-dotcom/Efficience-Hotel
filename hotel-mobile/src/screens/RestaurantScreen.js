@@ -1,10 +1,13 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { DataContext } from "../context/DataContext";
+import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
+import DynamicButton from "../components/DynamicButton";
 
 export default function RestaurantScreen() {
   const { restaurantData, addRestoRow } = useContext(DataContext);
+  const { isDark, colors } = useContext(ThemeContext);
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [service, setService] = useState("Déjeuner");
@@ -32,9 +35,11 @@ export default function RestaurantScreen() {
   const ticketMoyen = totalCouverts > 0 ? (totalVentes / totalCouverts).toFixed(0) : 0;
   const margeBrute = totalVentes > 0 ? (((totalVentes - totalCout) / totalVentes) * 100).toFixed(1) : 0;
 
+  const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Restaurant - Saisie Quotidienne</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Restaurant - Saisie Quotidienne</Text>
       
       <View style={styles.kpiContainer}>
         <KPI title="CA Total" value={`${totalVentes.toLocaleString()} CFA`} />
@@ -43,38 +48,43 @@ export default function RestaurantScreen() {
         <KPI title="Marge Brute" value={`${margeBrute} %`} />
       </View>
 
-      <View style={styles.form}>
-        <Text style={styles.sectionHeader}>Nouvelle Entrée</Text>
-        <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
-        <TextInput style={styles.input} placeholder="Service (Déj./Dîner)" value={service} onChangeText={setService} />
-        <TextInput style={styles.input} placeholder="Nombre de couverts" value={couverts} onChangeText={setCouverts} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Ventes (FCFA)" value={ventes} onChangeText={setVentes} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Coût matières (FCFA)" value={coutMatiere} onChangeText={setCoutMatiere} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
-        <TouchableOpacity style={styles.button} onPress={handleAdd}>
-          <Text style={styles.buttonText}>Enregistrer le Service</Text>
-        </TouchableOpacity>
+      <View style={[styles.form, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Nouvelle Entrée</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Service (Déj./Dîner)" value={service} onChangeText={setService} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nombre de couverts" value={couverts} onChangeText={setCouverts} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Ventes (FCFA)" value={ventes} onChangeText={setVentes} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Coût matières (FCFA)" value={coutMatiere} onChangeText={setCoutMatiere} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
+        
+        <View style={{ marginTop: 10 }}>
+          <DynamicButton 
+            title="Enregistrer le Service" 
+            onPress={handleAdd} 
+            color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
+          />
+        </View>
       </View>
 
-      <Text style={styles.sectionHeader}>Historique Quotidien</Text>
-      <ScrollView horizontal style={styles.tableScroll}>
+      <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Historique Quotidien</Text>
+      <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>
         <View>
-          <View style={styles.tableHeader}>
-            <Text style={styles.col}>Date</Text>
-            <Text style={styles.col}>Service</Text>
-            <Text style={styles.col}>Couverts</Text>
-            <Text style={styles.col}>Ventes</Text>
-            <Text style={styles.col}>Coûts M.</Text>
-            <Text style={styles.col}>FC %</Text>
+          <View style={[styles.tableHeader, { borderColor: colors.secondary }]}>
+            <Text style={[styles.col, { color: colors.text }]}>Date</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Service</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Couverts</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Ventes</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Coûts M.</Text>
+            <Text style={[styles.col, { color: colors.text }]}>FC %</Text>
           </View>
           {restaurantData.map(row => (
-            <View key={row.id} style={styles.tableRow}>
-              <Text style={styles.col}>{row.date}</Text>
-              <Text style={styles.col}>{row.service}</Text>
-              <Text style={styles.col}>{row.couverts}</Text>
-              <Text style={styles.col}>{row.ventes}</Text>
-              <Text style={styles.col}>{row.coutMatiere}</Text>
-              <Text style={styles.col}>{row.foodCostPerc}%</Text>
+            <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.date}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.service}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.couverts}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.ventes}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.coutMatiere}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.foodCostPerc}%</Text>
             </View>
           ))}
         </View>
@@ -85,16 +95,14 @@ export default function RestaurantScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: "#f7f9fc" },
-  title: { fontSize: 20, fontWeight: "bold", color: "#1a1a2e", marginVertical: 15 },
+  container: { flex: 1, padding: 15 },
+  title: { fontSize: 20, fontWeight: "bold", marginVertical: 15 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
-  form: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 20 },
-  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15, color: "#e94560" },
-  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, marginBottom: 10 },
-  button: { backgroundColor: "#0f3460", padding: 15, borderRadius: 5, alignItems: "center", marginTop: 5 },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  tableScroll: { backgroundColor: "#fff", padding: 10, borderRadius: 8 },
-  tableHeader: { flexDirection: "row", borderBottomWidth: 2, borderColor: "#e94560", paddingBottom: 10, marginBottom: 5 },
-  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", paddingVertical: 10 },
+  form: { padding: 15, borderRadius: 8, marginBottom: 20 },
+  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  input: { borderWidth: 1, padding: 10, borderRadius: 5, marginBottom: 10 },
+  tableScroll: { padding: 10, borderRadius: 8 },
+  tableHeader: { flexDirection: "row", borderBottomWidth: 2, paddingBottom: 10, marginBottom: 5 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, paddingVertical: 10 },
   col: { width: 90, textAlign: "center", fontSize: 12 }
 });

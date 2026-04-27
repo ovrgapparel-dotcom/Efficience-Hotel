@@ -1,13 +1,16 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { DataContext } from "../context/DataContext";
+import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
+import DynamicButton from "../components/DynamicButton";
 
 export default function FinanceScreen() {
   const { financeData, addFinanceRow } = useContext(DataContext);
+  const { isDark, colors } = useContext(ThemeContext);
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [type, setType] = useState("Coût"); // Revenu ou Coût
+  const [type, setType] = useState("Coût"); 
   const [depart, setDepart] = useState("Général");
   const [desc, setDesc] = useState("");
   const [montant, setMontant] = useState("");
@@ -26,9 +29,11 @@ export default function FinanceScreen() {
   const totalCouts = financeData.filter(d => d.type === "Coût").reduce((acc, r) => acc + r.montant, 0);
   const ebitdaJournalier = totalRevenus - totalCouts;
 
+  const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Finance & Trésorerie</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Finance & Trésorerie</Text>
       
       <View style={styles.kpiContainer}>
         <KPI title="Revenus Extra" value={`${totalRevenus.toLocaleString()} CFA`} />
@@ -36,38 +41,43 @@ export default function FinanceScreen() {
         <KPI title="EBITDA Dept" value={`${ebitdaJournalier.toLocaleString()} CFA`} />
       </View>
 
-      <View style={styles.form}>
-        <Text style={styles.sectionHeader}>Saisie Comptable</Text>
-        <TextInput style={styles.input} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
-        <TextInput style={styles.input} placeholder="Type (Revenu / Coût)" value={type} onChangeText={setType} />
-        <TextInput style={styles.input} placeholder="Département / Poste" value={depart} onChangeText={setDepart} />
-        <TextInput style={styles.input} placeholder="Description" value={desc} onChangeText={setDesc} />
-        <TextInput style={styles.input} placeholder="Montant (FCFA)" value={montant} onChangeText={setMontant} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Mode de paiement" value={paiement} onChangeText={setPaiement} />
-        <TouchableOpacity style={styles.button} onPress={handleAdd}>
-          <Text style={styles.buttonText}>Enregistrer Transaction</Text>
-        </TouchableOpacity>
+      <View style={[styles.form, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Saisie Comptable</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Type (Revenu / Coût)" value={type} onChangeText={setType} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Département / Poste" value={depart} onChangeText={setDepart} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Description" value={desc} onChangeText={setDesc} />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Montant (FCFA)" value={montant} onChangeText={setMontant} keyboardType="numeric" />
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Mode de paiement" value={paiement} onChangeText={setPaiement} />
+        
+        <View style={{ marginTop: 10 }}>
+          <DynamicButton 
+            title="Enregistrer Transaction" 
+            onPress={handleAdd} 
+            color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
+          />
+        </View>
       </View>
 
-      <Text style={styles.sectionHeader}>Registre Quotidien</Text>
-      <ScrollView horizontal style={styles.tableScroll}>
+      <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Registre Quotidien</Text>
+      <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>
         <View>
-          <View style={styles.tableHeader}>
-            <Text style={styles.col}>Date</Text>
-            <Text style={styles.col}>Type</Text>
-            <Text style={styles.col}>Poste</Text>
-            <Text style={styles.col}>Description</Text>
-            <Text style={styles.col}>Montant</Text>
-            <Text style={styles.col}>Paiement</Text>
+          <View style={[styles.tableHeader, { borderColor: colors.secondary }]}>
+            <Text style={[styles.col, { color: colors.text }]}>Date</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Type</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Poste</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Description</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Montant</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Paiement</Text>
           </View>
           {financeData.map(row => (
-            <View key={row.id} style={styles.tableRow}>
-              <Text style={styles.col}>{row.date}</Text>
+            <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.date}</Text>
               <Text style={[styles.col, {color: row.type === 'Revenu' ? 'green' : 'red'}]}>{row.type}</Text>
-              <Text style={styles.col}>{row.departement}</Text>
-              <Text style={styles.col}>{row.description}</Text>
-              <Text style={styles.col}>{row.montant}</Text>
-              <Text style={styles.col}>{row.paiement}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.departement}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.description}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.montant}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.paiement}</Text>
             </View>
           ))}
         </View>
@@ -78,16 +88,14 @@ export default function FinanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: "#f7f9fc" },
-  title: { fontSize: 20, fontWeight: "bold", color: "#1a1a2e", marginVertical: 15 },
+  container: { flex: 1, padding: 15 },
+  title: { fontSize: 20, fontWeight: "bold", marginVertical: 15 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
-  form: { backgroundColor: "#fff", padding: 15, borderRadius: 8, marginBottom: 20 },
-  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15, color: "#e94560" },
-  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, marginBottom: 10 },
-  button: { backgroundColor: "#0f3460", padding: 15, borderRadius: 5, alignItems: "center", marginTop: 5 },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  tableScroll: { backgroundColor: "#fff", padding: 10, borderRadius: 8 },
-  tableHeader: { flexDirection: "row", borderBottomWidth: 2, borderColor: "#e94560", paddingBottom: 10, marginBottom: 5 },
-  tableRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", paddingVertical: 10 },
+  form: { padding: 15, borderRadius: 8, marginBottom: 20 },
+  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  input: { borderWidth: 1, padding: 10, borderRadius: 5, marginBottom: 10 },
+  tableScroll: { padding: 10, borderRadius: 8 },
+  tableHeader: { flexDirection: "row", borderBottomWidth: 2, paddingBottom: 10, marginBottom: 5 },
+  tableRow: { flexDirection: "row", borderBottomWidth: 1, paddingVertical: 10 },
   col: { width: 90, textAlign: "center", fontSize: 12 }
 });
