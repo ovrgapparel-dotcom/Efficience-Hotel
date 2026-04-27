@@ -117,12 +117,12 @@ const styles = StyleSheet.create({
   },
   brandSection: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 26,
   },
   logo: {
-    width: 90,
-    height: 90,
-    marginBottom: 12,
+    width: 220,
+    height: 220,
+    marginBottom: 16,
   },
   powered: {
     fontSize: 13,
