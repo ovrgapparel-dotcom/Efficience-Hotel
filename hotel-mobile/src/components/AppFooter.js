@@ -13,10 +13,10 @@ const SOCIAL = [
     lib: "FontAwesome5",
   },
   {
-    name: "twitter-x",
+    name: "twitter",
     url: "https://x.com/Virgile_IMI",
-    color: "#ffffff",
-    lib: "MaterialCommunityIcons",
+    color: "#1DA1F2",
+    lib: "FontAwesome5",
   },
   {
     name: "linkedin",
