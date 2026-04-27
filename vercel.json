@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd hotel-mobile && npm install && npx expo export --platform web --output-dir ../dist",
+  "outputDirectory": "dist"
+}
