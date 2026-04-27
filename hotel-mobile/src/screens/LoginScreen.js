@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
 import { ThemeContext } from "../context/ThemeContext";
-
-import API from "../services/api";
 
 const LOGO_MINIMAL = require("../../assets/logo_eh_minimal.png");
 

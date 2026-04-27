@@ -1,23 +1,34 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://uaewisovhyycrvzwqdcl.supabase.co";
-const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // Placeholder - keep for remote support
+// New Supabase project for remote monitoring & support
+// To enable full monitoring, add EXPO_PUBLIC_SUPABASE_ANON_KEY to your Vercel environment variables
+const SUPABASE_URL = "https://uaewisovhyycrvzwqdcl.supabase.co";
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "";
 
-const API = createClient(supabaseUrl, supabaseAnonKey);
+let supabase = null;
+try {
+  if (SUPABASE_ANON_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase client not initialized:", e.message);
+}
 
 /**
- * Monitoring helper for remote support
+ * Remote monitoring helper — logs errors to Supabase for support purposes.
+ * Silently no-ops if Supabase key is not configured.
  */
 export const logError = async (error, context = {}) => {
+  if (!supabase) return;
   try {
-    await API.from("logs").insert([{ 
-      message: error.message, 
-      context, 
-      timestamp: new Date().toISOString() 
+    await supabase.from("logs").insert([{
+      message: error?.message || String(error),
+      context,
+      timestamp: new Date().toISOString(),
     }]);
   } catch (err) {
-    console.error("Failed to remote log error", err);
+    console.warn("Remote log failed:", err.message);
   }
 };
 
-export default API;
+export default supabase;
