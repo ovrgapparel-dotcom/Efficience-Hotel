@@ -79,6 +79,11 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.btnText}>Finance / Autres</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.actions}>
+        <TouchableOpacity style={[styles.actionBtn, { width: "100%", backgroundColor: "#e94560" }]} onPress={() => navigation.navigate("Insights")}>
+            <Text style={styles.btnText}>Exécuter Intelligence IA (SAP Report)</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
           <Text style={styles.resetText}>Réinitialiser la Base de Données Locale</Text>

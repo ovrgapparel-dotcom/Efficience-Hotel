@@ -10,6 +10,7 @@ import HotelScreen from "./src/screens/HotelScreen";
 import RestaurantScreen from "./src/screens/RestaurantScreen";
 import HrScreen from "./src/screens/HrScreen";
 import FinanceScreen from "./src/screens/FinanceScreen";
+import InsightsScreen from "./src/screens/InsightsScreen";
 
 const Stack = createNativeStackNavigator();
 const MainStack = createNativeStackNavigator();
@@ -18,6 +19,7 @@ function MainLayout() {
   return (
     <MainStack.Navigator>
       <MainStack.Screen name="Dashboard" component={DashboardScreen} options={{ title: "Résumé Journalier Global" }} />
+      <MainStack.Screen name="Insights" component={InsightsScreen} options={{ title: "Projections & IA" }} />
       <MainStack.Screen name="Hotel" component={HotelScreen} options={{ title: "Hébergement" }} />
       <MainStack.Screen name="Restaurant" component={RestaurantScreen} options={{ title: "Restaurant" }} />
       <MainStack.Screen name="HR" component={HrScreen} options={{ title: "Ressources Humaines" }} />
