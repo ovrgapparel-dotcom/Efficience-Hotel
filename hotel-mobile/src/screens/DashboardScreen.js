@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from "react-native";
 import { PieChart } from "react-native-chart-kit";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import KPI from "../components/KPI";
 
@@ -65,23 +66,28 @@ export default function DashboardScreen({ navigation }) {
 
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate("Hotel")}>
+            <FontAwesome5 name="bed" size={24} color="#fff" style={{ marginBottom: 5 }} />
             <Text style={styles.btnText}>Hébergement</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate("Restaurant")}>
+            <MaterialIcons name="restaurant" size={24} color="#fff" style={{ marginBottom: 5 }} />
             <Text style={styles.btnText}>Restaurant</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate("HR")}>
+            <FontAwesome5 name="users" size={24} color="#fff" style={{ marginBottom: 5 }} />
             <Text style={styles.btnText}>Ressources Humaines</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate("Finance")}>
+            <FontAwesome5 name="chart-line" size={24} color="#fff" style={{ marginBottom: 5 }} />
             <Text style={styles.btnText}>Finance / Autres</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={[styles.actionBtn, { width: "100%", backgroundColor: "#e94560" }]} onPress={() => navigation.navigate("Insights")}>
-            <Text style={styles.btnText}>Exécuter Intelligence IA (SAP Report)</Text>
+        <TouchableOpacity style={[styles.actionBtn, { width: "100%", backgroundColor: "#e94560", flexDirection: "row", justifyContent: "center" }]} onPress={() => navigation.navigate("Insights")}>
+            <FontAwesome5 name="brain" size={20} color="#fff" style={{ marginRight: 10 }} />
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 13, marginTop: 2 }}>Intelligence Exécutive (SAP)</Text>
         </TouchableOpacity>
       </View>
 
