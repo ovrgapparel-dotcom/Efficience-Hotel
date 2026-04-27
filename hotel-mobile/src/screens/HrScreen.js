@@ -1,9 +1,13 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
+import DepartmentBanner from "../components/DepartmentBanner";
+
+const BANNER = require("../../assets/banners/banner_rh.png");
 
 export default function HrScreen() {
   const { hrData, addHrRow, roomsData, restaurantData } = useContext(DataContext);
@@ -40,8 +44,12 @@ export default function HrScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>RH - Pointage Quotidien</Text>
-      
+      <DepartmentBanner
+        image={BANNER}
+        title="Ressources Humaines"
+        subtitle="Pointage & Masse Salariale"
+        icon={<FontAwesome5 name="users" size={26} color="#fff" />}
+      />
       <View style={styles.kpiContainer}>
         <KPI title="Coût Total MO" value={`${coutTotalMO.toLocaleString()} CFA`} />
         <KPI title="Heures Totales" value={`${heuresTotales} H`} />

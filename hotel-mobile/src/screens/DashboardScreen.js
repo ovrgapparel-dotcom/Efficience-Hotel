@@ -6,6 +6,9 @@ import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
+import DepartmentBanner from "../components/DepartmentBanner";
+
+const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 
 export default function DashboardScreen({ navigation }) {
   const { roomsData, restaurantData, hrData, financeData, resetAllData } = useContext(DataContext);
@@ -29,14 +32,24 @@ export default function DashboardScreen({ navigation }) {
   const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts;
   const Marge = CA_Total > 0 ? ((EBITDA / CA_Total) * 100).toFixed(1) : 0;
 
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.header, { color: colors.text }]}>Résumé Consolidé</Text>
+      
+      <View style={styles.topBar}>
+        <Text style={[styles.appName, { color: colors.text }]}>Efficience Hotel</Text>
         <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
-          <FontAwesome5 name={isDark ? "sun" : "moon"} size={22} color={colors.text} />
+          <FontAwesome5 name={isDark ? "sun" : "moon"} size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
+
+      <DepartmentBanner
+        image={BANNER_DASHBOARD}
+        title="Résumé Consolidé"
+        subtitle={today}
+        icon={<FontAwesome5 name="hotel" size={26} color="#fff" />}
+      />
 
       <View style={styles.kpiContainer}>
         <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} isDark={isDark} />
@@ -117,12 +130,12 @@ export default function DashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  header: { fontSize: 24, fontWeight: "bold" },
-  themeToggle: { padding: 10 },
+  topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+  appName: { fontSize: 20, fontWeight: "bold" },
+  themeToggle: { padding: 8 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
   chartTitle: { fontSize: 18, fontWeight: "600", marginBottom: 10, marginTop: 10 },
-  actions: { flexDirection: "row", justifyContent: "space-between", marginTop: 15 },
-  resetBtn: { padding: 15, borderRadius: 8, marginTop: 40, borderWidth: 1, alignItems: "center" },
+  actions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
+  resetBtn: { padding: 15, borderRadius: 8, marginTop: 30, borderWidth: 1, alignItems: "center" },
   resetText: { fontWeight: "bold" }
 });

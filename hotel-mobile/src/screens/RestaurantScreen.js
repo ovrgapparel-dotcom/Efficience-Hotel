@@ -1,9 +1,13 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
+import DepartmentBanner from "../components/DepartmentBanner";
+
+const BANNER = require("../../assets/banners/banner_restaurant.png");
 
 export default function RestaurantScreen() {
   const { restaurantData, addRestoRow } = useContext(DataContext);
@@ -39,8 +43,12 @@ export default function RestaurantScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Restaurant - Saisie Quotidienne</Text>
-      
+      <DepartmentBanner
+        image={BANNER}
+        title="Restaurant"
+        subtitle="Suivi F&B – Couverts & Ventes"
+        icon={<MaterialIcons name="restaurant" size={26} color="#fff" />}
+      />
       <View style={styles.kpiContainer}>
         <KPI title="CA Total" value={`${totalVentes.toLocaleString()} CFA`} />
         <KPI title="Food Cost" value={`${avgFoodCost} %`} />

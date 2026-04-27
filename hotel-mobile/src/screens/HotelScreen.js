@@ -1,9 +1,13 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
+import DepartmentBanner from "../components/DepartmentBanner";
+
+const BANNER = require("../../assets/banners/banner_hebergement.png");
 
 export default function HotelScreen() {
   const { roomsData, addRoomRow } = useContext(DataContext);
@@ -43,8 +47,12 @@ export default function HotelScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Hébergement - Saisie Quotidienne</Text>
-      
+      <DepartmentBanner
+        image={BANNER}
+        title="Hébergement"
+        subtitle="Gestion des Chambres & Nuitées"
+        icon={<FontAwesome5 name="bed" size={26} color="#fff" />}
+      />
       <View style={styles.kpiContainer}>
         <KPI title="Tx Occup." value={`${tauxOcc}%`} />
         <KPI title="Revenu" value={`${totalRevenu.toLocaleString()} CFA`} />

@@ -1,9 +1,13 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
+import DepartmentBanner from "../components/DepartmentBanner";
+
+const BANNER = require("../../assets/banners/banner_finance.png");
 
 export default function FinanceScreen() {
   const { financeData, addFinanceRow } = useContext(DataContext);
@@ -33,8 +37,12 @@ export default function FinanceScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Finance & Trésorerie</Text>
-      
+      <DepartmentBanner
+        image={BANNER}
+        title="Finance & Trésorerie"
+        subtitle="Comptabilité & Flux de Fonds"
+        icon={<FontAwesome5 name="chart-line" size={26} color="#fff" />}
+      />
       <View style={styles.kpiContainer}>
         <KPI title="Revenus Extra" value={`${totalRevenus.toLocaleString()} CFA`} />
         <KPI title="Coûts Divers" value={`${totalCouts.toLocaleString()} CFA`} />
