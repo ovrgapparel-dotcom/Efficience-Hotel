@@ -56,6 +56,7 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
 <head>
   <meta charset="UTF-8"/>
   <title>Rapport Hôtelier Exécutif – ${date}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
@@ -64,10 +65,12 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
     .header-logo { width: 120px; }
     h1 { color: #111; font-weight: 800; font-size: 22px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
     .subtitle { color: #555; font-size: 10px; font-weight: 600; margin-top: 4px; }
-    .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
+    .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
     .kpi-card { background: #fff; border-left: 5px solid #1a6b3c; padding: 12px 16px; border-radius: 4px; min-width: 140px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .kpi-card .label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .kpi-card .value { font-size: 18px; font-weight: 800; color: #222; }
+    .chart-container { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
+    canvas { max-width: 400px !important; max-height: 250px !important; }
     h2 { color: #1a6b3c; font-size: 14px; margin: 25px 0 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     th { background: #222; color: #fff; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
@@ -97,6 +100,11 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
     <div class="kpi-card"><div class="label">Taux d'Occup.</div><div class="value">${tauxOcc} %</div></div>
     <div class="kpi-card" style="border-left-color: ${foodCost <= 30 ? '#1a6b3c' : '#d9534f'};"><div class="label">Food Cost</div><div class="value">${foodCost} %</div></div>
     <div class="kpi-card"><div class="label">Coûts RH</div><div class="value">${Couts_RH.toLocaleString()} CFA</div></div>
+  </div>
+
+  <div class="chart-container">
+    <h3 style="margin:0 0 15px; font-size:12px; color:#1a6b3c; text-transform:uppercase;">Répartition par Département</h3>
+    <canvas id="revenueChart"></canvas>
   </div>
 
   <div class="proj-box">
@@ -130,6 +138,29 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
   </table>
 
   <div class="footer">Propulsé par IMI Business Solutions • Confidentiel</div>
+
+  <script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Hébergement', 'Restauration', 'Autres Revenus'],
+        datasets: [{
+          data: [${CA_Hebergement}, ${CA_Restaurant}, ${Autres_Revenus}],
+          backgroundColor: ['#1a6b3c', '#d98a29', '#f0ad4e'],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1500, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 10, weight: 'bold' } } }
+        }
+      }
+    });
+  </script>
 </body>
 </html>`;
 };
