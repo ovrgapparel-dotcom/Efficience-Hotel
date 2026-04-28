@@ -55,72 +55,81 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
-  <title>Rapport Hôtelier – ${date}</title>
+  <title>Rapport Hôtelier Exécutif – ${date}</title>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a2e; font-size: 12px; }
-    h1 { color: #0f3460; margin-bottom: 2px; }
-    .subtitle { color: #888; margin-bottom: 20px; font-size: 11px; }
-    .kpi-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
-    .kpi-card { background: #f4f7ff; border-left: 4px solid #0f3460; padding: 10px 14px; border-radius: 6px; min-width: 140px; flex: 1; }
-    .kpi-card .label { font-size: 10px; color: #666; margin-bottom: 3px; }
-    .kpi-card .value { font-size: 16px; font-weight: bold; color: #0f3460; }
-    .proj-box { background: #fff3f5; border-left: 4px solid #e94560; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; }
-    .proj-box h3 { color: #e94560; margin: 0 0 8px; font-size: 13px; }
-    .proj-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .proj-row span:last-child { font-weight: bold; }
-    h2 { color: #e94560; font-size: 13px; margin: 20px 0 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th { background: #0f3460; color: white; padding: 7px 6px; text-align: left; font-size: 11px; }
-    td { padding: 6px; border-bottom: 1px solid #eee; font-size: 11px; }
-    tr:nth-child(even) td { background: #f9f9f9; }
-    .footer { margin-top: 30px; text-align: center; color: #aaa; font-size: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body { padding: 40px; color: #1a1a1a; font-size: 11px; background-color: #f8f9fa; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a6b3c; padding-bottom: 15px; margin-bottom: 25px; }
+    .header-logo { width: 120px; }
+    h1 { color: #111; font-weight: 800; font-size: 22px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+    .subtitle { color: #555; font-size: 10px; font-weight: 600; margin-top: 4px; }
+    .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
+    .kpi-card { background: #fff; border-left: 5px solid #1a6b3c; padding: 12px 16px; border-radius: 4px; min-width: 140px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .kpi-card .label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kpi-card .value { font-size: 18px; font-weight: 800; color: #222; }
+    h2 { color: #1a6b3c; font-size: 14px; margin: 25px 0 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    th { background: #222; color: #fff; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
+    td { padding: 8px; border-bottom: 1px solid #eee; font-size: 10px; color: #333; }
+    tr:nth-child(even) td { background: #fafafa; }
+    tr:last-child td { border-bottom: 2px solid #222; }
+    .proj-box { background: #1a6b3c; color: #fff; padding: 16px 20px; border-radius: 6px; margin-bottom: 25px; box-shadow: 0 4px 8px rgba(26,107,60,0.2); }
+    .proj-box h3 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color:#fff; }
+    .proj-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; }
+    .proj-row span:last-child { font-weight: 800; font-size: 14px; }
+    .footer { margin-top: 40px; text-align: center; color: #666; font-size: 9px; border-top: 1px solid #ccc; padding-top: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
-  <h1>🏨 Efficience Hotel – Rapport Journalier</h1>
-  <div class="subtitle">Généré le ${new Date().toLocaleString('fr-FR')} | Période : ${date}</div>
+  <div class="header">
+    <div>
+      <h1>Rapport Exécutif</h1>
+      <div class="subtitle">Généré le ${new Date().toLocaleString('fr-FR')} | Période : ${date}</div>
+    </div>
+    <img src="https://efficience-hotel-web.vercel.app/logo_eh.png" class="header-logo" alt="Efficience Hotel Logo" />
+  </div>
 
   <div class="kpi-grid">
     <div class="kpi-card"><div class="label">CA Total</div><div class="value">${CA_Total.toLocaleString()} CFA</div></div>
     <div class="kpi-card"><div class="label">EBITDA</div><div class="value">${EBITDA.toLocaleString()} CFA</div></div>
-    <div class="kpi-card"><div class="label">Marge EBITDA</div><div class="value">${Marge} %</div></div>
+    <div class="kpi-card" style="border-left-color: ${Marge >= 25 ? '#1a6b3c' : Marge < 0 ? '#d9534f' : '#f0ad4e'};"><div class="label">Marge EBITDA</div><div class="value">${Marge} %</div></div>
     <div class="kpi-card"><div class="label">Taux d'Occup.</div><div class="value">${tauxOcc} %</div></div>
-    <div class="kpi-card"><div class="label">Food Cost</div><div class="value">${foodCost} %</div></div>
+    <div class="kpi-card" style="border-left-color: ${foodCost <= 30 ? '#1a6b3c' : '#d9534f'};"><div class="label">Food Cost</div><div class="value">${foodCost} %</div></div>
     <div class="kpi-card"><div class="label">Coûts RH</div><div class="value">${Couts_RH.toLocaleString()} CFA</div></div>
   </div>
 
   <div class="proj-box">
-    <h3>🔮 Projections Mensuelles (×30)</h3>
+    <h3>Projections Mensuelles</h3>
     <div class="proj-row"><span>CA Mensuel Projeté</span><span>${projCA} CFA</span></div>
     <div class="proj-row"><span>EBITDA Mensuel Projeté</span><span>${projEBITDA} CFA</span></div>
   </div>
 
-  <h2>🛏 Hébergement</h2>
+  <h2>Hébergement</h2>
   <table>
-    <thead><tr><th>Date</th><th>Ch N°</th><th>Type</th><th>Client</th><th>Statut</th><th>Px/Nuit</th><th>Nuits</th><th>Total (CFA)</th></tr></thead>
+    <thead><tr><th>Date</th><th>Ch N°</th><th>Type</th><th>Client</th><th>Statut</th><th>Px/Nuit</th><th>Nuits</th><th>Total</th></tr></thead>
     <tbody>${roomRows}</tbody>
   </table>
 
-  <h2>🍽 Restaurant</h2>
+  <h2>Restaurant</h2>
   <table>
     <thead><tr><th>Date</th><th>Service</th><th>Couverts</th><th>Ventes</th><th>Coûts Mat.</th><th>FC %</th></tr></thead>
     <tbody>${restoRows}</tbody>
   </table>
 
-  <h2>👥 Ressources Humaines</h2>
+  <h2>Ressources Humaines</h2>
   <table>
     <thead><tr><th>Date</th><th>Employé</th><th>Poste</th><th>Heures</th><th>Taux</th><th>Salaire J.</th></tr></thead>
     <tbody>${hrRows}</tbody>
   </table>
 
-  <h2>💰 Finance & Trésorerie</h2>
+  <h2>Finance & Trésorerie</h2>
   <table>
     <thead><tr><th>Date</th><th>Type</th><th>Poste</th><th>Description</th><th>Montant</th><th>Paiement</th></tr></thead>
     <tbody>${finRows}</tbody>
   </table>
 
-  <div class="footer">Rapport généré par Efficience Hotel ERP – Confidentiel</div>
+  <div class="footer">Propulsé par IMI Business Solutions • Confidentiel</div>
 </body>
 </html>`;
 };

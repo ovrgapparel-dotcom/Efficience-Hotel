@@ -1,12 +1,9 @@
 import React, { useContext } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, Platform } from "react-native";
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import DynamicButton from "../components/DynamicButton";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { generateHotelReport } from "../utils/reportGenerator";
 
 export default function InsightsScreen() {
   const { roomsData, restaurantData, hrData, financeData } = useContext(DataContext);
@@ -36,38 +33,6 @@ export default function InsightsScreen() {
   if (daysRecorded === 0) daysRecorded = 1;
   const projectedMonthlyCA = (CA_Total / daysRecorded) * 30;
   const projectedMonthlyEBITDA = (EBITDA / daysRecorded) * 30;
-
-  // --- PDF Export ---
-  const handleExportPDF = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const html = generateHotelReport({ roomsData, restaurantData, hrData, financeData, date: today });
-
-      if (Platform.OS === 'web') {
-        // Web: open print dialog
-        const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
-        win.focus();
-        win.print();
-      } else {
-        // Mobile: generate PDF and share it
-        const { uri } = await Print.printToFileAsync({ html, base64: false });
-        const canShare = await Sharing.isAvailableAsync();
-        if (canShare) {
-          await Sharing.shareAsync(uri, {
-            mimeType: 'application/pdf',
-            dialogTitle: `Rapport Hôtelier ${today}`,
-            UTI: 'com.adobe.pdf'
-          });
-        } else {
-          Alert.alert("PDF généré", `Fichier sauvegardé à: ${uri}`);
-        }
-      }
-    } catch (err) {
-      Alert.alert("Erreur", "Impossible de générer le rapport PDF: " + err.message);
-    }
-  };
 
   // --- Logic Engine ---
   const insights = [];
@@ -105,18 +70,6 @@ export default function InsightsScreen() {
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.header, { color: colors.text }]}>Tableau de Bord Exécutif</Text>
       <Text style={[styles.subtitle, { color: colors.textMuted }]}>Intelligence d'Affaires & IA Prédictive</Text>
-
-      {/* PDF Export Button */}
-      <View style={{ marginBottom: 20 }}>
-        <DynamicButton
-          title="Exporter Rapport PDF"
-          onPress={handleExportPDF}
-          icon={<FontAwesome5 name="file-pdf" size={16} color="#fff" />}
-          color={colors.secondary}
-          hoverColor={colors.secondaryHover}
-          isDark={isDark}
-        />
-      </View>
 
       {/* Projections */}
       <Text style={[styles.sectionTitle, { color: colors.secondary }]}>🔮 Projections sur 30 Jours</Text>
