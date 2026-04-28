@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
@@ -97,23 +97,23 @@ export default function DashboardScreen({ navigation }) {
       />
 
       <View style={styles.actions}>
-        <DynamicButton title="Hébergement" onPress={() => navigation.navigate("Hotel")} icon={<Image source={require("../../assets/icons/icon_hotel.png")} style={{width: 20, height: 20}} resizeMode="contain" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
-        <DynamicButton title="Restaurant" onPress={() => navigation.navigate("Restaurant")} icon={<Image source={require("../../assets/icons/icon_restaurant.png")} style={{width: 20, height: 20}} resizeMode="contain" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Hébergement" onPress={() => navigation.navigate("Hotel")} icon={<FontAwesome5 name="bed" size={26} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Restaurant" onPress={() => navigation.navigate("Restaurant")} icon={<MaterialIcons name="restaurant" size={26} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
       </View>
       <View style={styles.actions}>
-        <DynamicButton title="Stock & Amort." onPress={() => navigation.navigate("Inventory")} icon={<Image source={require("../../assets/icons/icon_stock.png")} style={{width: 20, height: 20}} resizeMode="contain" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
-        <DynamicButton title="Ressources" onPress={() => navigation.navigate("HR")} icon={<Image source={require("../../assets/icons/icon_hr.png")} style={{width: 20, height: 20}} resizeMode="contain" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Stock & Amort." onPress={() => navigation.navigate("Inventory")} icon={<FontAwesome5 name="archive" size={26} color="#fff" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
+        <DynamicButton title="Ressources" onPress={() => navigation.navigate("HR")} icon={<FontAwesome5 name="users" size={26} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
       </View>
       <View style={styles.actions}>
-        <DynamicButton title="Finance" onPress={() => navigation.navigate("Finance")} icon={<Image source={require("../../assets/icons/icon_finance.png")} style={{width: 20, height: 20}} resizeMode="contain" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
-        <DynamicButton title="Rapports PDF" onPress={() => navigation.navigate("Reports")} icon={<FontAwesome5 name="file-pdf" size={16} color="#fff" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
+        <DynamicButton title="Finance" onPress={() => navigation.navigate("Finance")} icon={<FontAwesome5 name="chart-line" size={26} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
+        <DynamicButton title="Rapports PDF" onPress={() => navigation.navigate("Reports")} icon={<FontAwesome5 name="file-pdf" size={26} color="#fff" />} width="48%" color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}/>
       </View>
 
       <View style={{ marginTop: 20 }}>
         <DynamicButton 
            title="Intelligence Exécutive (SAP)" 
            onPress={() => navigation.navigate("Insights")} 
-           icon={<FontAwesome5 name="brain" size={18} color="#fff" />} 
+           icon={<FontAwesome5 name="brain" size={32} color="#fff" />} 
            width="100%" 
            color={colors.secondary} hoverColor={colors.secondaryHover} isDark={isDark}
         />
