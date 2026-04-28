@@ -1,20 +1,31 @@
-import React, { useContext } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useContext, useEffect, useRef } from "react";
+import { Text, StyleSheet, Animated } from "react-native";
 import { ThemeContext } from "../context/ThemeContext";
 
-export default function KPI({ title, value }) {
+export default function KPI({ title, value, delay = 0 }) {
   const { isDark, colors } = useContext(ThemeContext);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 600, delay, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 600, delay, useNativeDriver: true }),
+    ]).start();
+  }, [delay]);
 
   return (
-    <View style={[styles.card, {
-      backgroundColor: colors.card,
-      borderColor: colors.border,
+    <Animated.View style={[styles.card, {
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      opacity: fadeAnim,
+      transform: [{ translateY: slideAnim }],
       borderTopColor: colors.gold,
-      shadowColor: isDark ? "#F0A500" : "#C25A00"
+      shadowColor: colors.gold,
     }]}>
       <Text style={[styles.title, { color: colors.textMuted }]}>{title}</Text>
       <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
-    </View>
+    </Animated.View>
   );
 }
 

@@ -16,6 +16,16 @@ export default function DashboardScreen({ navigation }) {
   const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
 
+  const chartFade = useRef(new Animated.Value(0)).current;
+  const chartScale = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(chartFade, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.spring(chartScale, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
   // --- Alert Watchdog ---
   useEffect(() => {
     const checkAlerts = async () => {
@@ -103,29 +113,31 @@ export default function DashboardScreen({ navigation }) {
       )}
 
       <View style={styles.kpiContainer}>
-        <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} isDark={isDark} />
-        <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} isDark={isDark} />
-        <KPI title="Marge OP" value={`${Marge} %`} isDark={isDark} />
-        <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} isDark={isDark} />
-        <KPI title="Food Cost" value={`${Food_Cost} %`} isDark={isDark} />
-        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} isDark={isDark} />
+        <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} delay={100} />
+        <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} delay={200} />
+        <KPI title="Marge OP" value={`${Marge} %`} delay={300} />
+        <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} delay={400} />
+        <KPI title="Food Cost" value={`${Food_Cost} %`} delay={500} />
+        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} delay={600} />
       </View>
 
       <Text style={[styles.chartTitle, { color: colors.text }]}>Répartition du Chiffre d'Affaires</Text>
-      <PieChart
-        data={[
-          { name: "Hébergement", population: CA_Hebergement, color: colors.primaryHover, legendFontColor: colors.textMuted, legendFontSize: 12 },
-          { name: "Restauration", population: CA_Restaurant, color: colors.secondary, legendFontColor: colors.textMuted, legendFontSize: 12 },
-          { name: "Autres", population: Autres_Revenus, color: "#f0a500", legendFontColor: colors.textMuted, legendFontSize: 12 }
-        ]}
-        width={Dimensions.get("window").width - 40}
-        height={220}
-        chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
-        accessor={"population"}
-        backgroundColor={"transparent"}
-        paddingLeft={"0"}
-        absolute
-      />
+      <Animated.View style={{ opacity: chartFade, transform: [{ scale: chartScale }] }}>
+        <PieChart
+          data={[
+            { name: "Hébergement", population: CA_Hebergement, color: colors.primaryHover, legendFontColor: colors.textMuted, legendFontSize: 12 },
+            { name: "Restauration", population: CA_Restaurant, color: colors.secondary, legendFontColor: colors.textMuted, legendFontSize: 12 },
+            { name: "Autres", population: Autres_Revenus, color: "#f0a500", legendFontColor: colors.textMuted, legendFontSize: 12 }
+          ]}
+          width={Dimensions.get("window").width - 40}
+          height={220}
+          chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
+          accessor={"population"}
+          backgroundColor={"transparent"}
+          paddingLeft={"0"}
+          absolute
+        />
+      </Animated.View>
 
       <View style={styles.actions}>
         <DynamicButton title="Hébergement" onPress={() => navigation.navigate("Hotel")} icon={<FontAwesome5 name="bed" size={26} color="#fff" />} width="48%" color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}/>
