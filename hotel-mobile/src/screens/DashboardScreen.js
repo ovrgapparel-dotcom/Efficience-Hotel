@@ -1,7 +1,8 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import { PieChart } from "react-native-chart-kit";
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { NotificationService } from "../services/NotificationService";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
@@ -14,6 +15,36 @@ const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 export default function DashboardScreen({ navigation }) {
   const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
+
+  // --- Alert Watchdog ---
+  useEffect(() => {
+    const checkAlerts = async () => {
+      // 1. Finance Alerts
+      const income = financeData.filter(d => d.type === 'Revenu').reduce((acc, r) => acc + r.montant, 0);
+      const expense = financeData.filter(d => d.type === 'Coût').reduce((acc, r) => acc + r.montant, 0);
+      const ebitda = income - expense - monthlyInventoryCost;
+
+      if (ebitda < 0 && financeData.length > 0) {
+        await NotificationService.sendLocalNotification(
+          "⚠️ ALERTE FINANCE",
+          "Flux de trésorerie négatif détecté. Revue urgente des coûts recommandée."
+        );
+      }
+
+      // 2. Inventory Alerts (Threshold: Item value < 5000 CFA considered 'low priority' or 'low stock')
+      const lowStockItems = inventoryData.filter(i => i.valeurInitiale < 5000);
+      if (lowStockItems.length > 0) {
+        await NotificationService.sendLocalNotification(
+          "📦 ALERTE STOCK",
+          `Besoins de réapprovisionnement pour: ${lowStockItems.map(i => i.nom).join(', ')}`
+        );
+      }
+    };
+
+    if (financeData.length > 0 || inventoryData.length > 0) {
+      checkAlerts();
+    }
+  }, [financeData, inventoryData]);
 
   const CA_Hebergement = roomsData.reduce((acc, row) => acc + (row.total || 0), 0);
   const totalChambres = 40; 
@@ -122,6 +153,14 @@ export default function DashboardScreen({ navigation }) {
       <TouchableOpacity style={[styles.resetBtn, { borderColor: isDark ? "#ff6681" : "red" }]} onPress={() => resetAllData()}>
           <Text style={[styles.resetText, { color: isDark ? "#ff6681" : "red" }]}>Réinitialiser la Base de Données</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.testNotifyBtn, { backgroundColor: colors.primary + '15', borderColor: colors.primary }]} 
+        onPress={() => NotificationService.sendLocalNotification("🔔 Test Système EH", "Les notifications push sont actives!")}
+      >
+          <FontAwesome5 name="bell" size={14} color={colors.primary} style={{ marginRight: 10 }} />
+          <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Tester les Alertes Push</Text>
+      </TouchableOpacity>
       
       <View style={{height: 70}} />
       <AppFooter />
@@ -140,5 +179,6 @@ const styles = StyleSheet.create({
   alertCenter: { marginBottom: 20 },
   alertItem: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, borderLeftWidth: 4, marginBottom: 8 },
   resetBtn: { padding: 15, borderRadius: 8, marginTop: 30, borderWidth: 1, alignItems: "center" },
-  resetText: { fontWeight: "bold" }
+  resetText: { fontWeight: "bold" },
+  testNotifyBtn: { padding: 15, borderRadius: 8, marginTop: 15, borderWidth: 1, alignItems: "center", flexDirection: 'row', justifyContent: 'center' }
 });

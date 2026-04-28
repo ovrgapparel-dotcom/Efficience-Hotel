@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
+import { NotificationService } from "./src/services/NotificationService";
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { DataProvider } from "./src/context/DataContext";
@@ -45,6 +46,9 @@ function RootNavigator() {
 }
 
 export default function App() {
+  useEffect(() => {
+    NotificationService.setup();
+  }, []);
   return (
     <ThemeProvider>
       <DataProvider>
