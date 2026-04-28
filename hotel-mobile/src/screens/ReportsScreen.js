@@ -27,9 +27,9 @@ export default function ReportsScreen() {
         const { uri } = await Print.printToFileAsync({ html, base64: false });
         const canShare = await Sharing.isAvailableAsync();
         if (canShare) {
-          await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: \`Rapport Hôtelier \${today}\`, UTI: 'com.adobe.pdf' });
+          await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: `Rapport Hôtelier ${today}`, UTI: 'com.adobe.pdf' });
         } else {
-          Alert.alert("PDF généré", \`Fichier sauvegardé à: \${uri}\`);
+          Alert.alert("PDF généré", `Fichier sauvegardé à: ${uri}`);
         }
       }
     } catch (err) {

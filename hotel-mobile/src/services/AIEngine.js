@@ -41,7 +41,7 @@ export const AIEngine = {
     if (Marge >= 30) {
       insights.push({
         title: "Hyper-Rentabilité",
-        text: \`Votre marge EBITDA de \${Marge.toFixed(1)}% surpasse les standards de l'industrie hôtelière (25-30%). La structure de vos coûts est remarquablement saine.\`,
+        text: `Votre marge EBITDA de ${Marge.toFixed(1)}% surpasse les standards de l'industrie hôtelière (25-30%). La structure de vos coûts est remarquablement saine.`,
         severity: "good",
         icon: "chart-line",
         action: "Maintenir le cap"
@@ -49,7 +49,7 @@ export const AIEngine = {
     } else if (Marge > 0 && Marge < 20) {
       insights.push({
         title: "Marge Sous-Performante",
-        text: \`La marge EBITDA actuelle de \${Marge.toFixed(1)}% est en deçà du seuil critique (20%). Une revue immédiate des coûts fixes est recommandée.\`,
+        text: `La marge EBITDA actuelle de ${Marge.toFixed(1)}% est en deçà du seuil critique (20%). Une revue immédiate des coûts fixes est recommandée.`,
         severity: "bad",
         icon: "exclamation-triangle",
         action: "Auditer les dépenses"
@@ -57,7 +57,7 @@ export const AIEngine = {
     } else if (Marge < 0) {
       insights.push({
         title: "Déficit Opérationnel (URGENT)",
-        text: \`Vos sorties de trésorerie globales dépassent vos flux entrants, entraînant une marge de \${Marge.toFixed(1)}%. Ce rythme risque de causer une crise de liquidités.\`,
+        text: `Vos sorties de trésorerie globales dépassent vos flux entrants, entraînant une marge de ${Marge.toFixed(1)}%. Ce rythme risque de causer une crise de liquidités.`,
         severity: "critical",
         icon: "skull-crossbones",
         action: "Bloquer les dépenses"
@@ -68,7 +68,7 @@ export const AIEngine = {
     if (ratioMasse > 40) {
       insights.push({
         title: "Surchauffe Salariale",
-        text: \`Le ratio masse salariale/CA atteint \${ratioMasse.toFixed(1)}% (Cible optimale: <35%). Vos plannings sont actuellement sur-staffés par rapport à votre volume d'activité réel.\`,
+        text: `Le ratio masse salariale/CA atteint ${ratioMasse.toFixed(1)}% (Cible optimale: <35%). Vos plannings sont actuellement sur-staffés par rapport à votre volume d'activity réel.`,
         severity: "critical",
         icon: "users",
         action: "Optimiser les plannings"
@@ -76,7 +76,7 @@ export const AIEngine = {
     } else if (ratioMasse > 0 && ratioMasse <= 30) {
       insights.push({
         title: "Efficience Salariale",
-        text: \`Avec \${ratioMasse.toFixed(1)}% de ratio RH, le rendement des équipes est maximal face au CA généré.\`,
+        text: `Avec ${ratioMasse.toFixed(1)}% de ratio RH, le rendement des équipes est maximal face au CA généré.`,
         severity: "good",
         icon: "check-circle",
         action: "Féliciter l'équipe"
@@ -88,7 +88,7 @@ export const AIEngine = {
       if (foodCost > 33) {
         insights.push({
           title: "Fuite de Trésorerie F&B",
-          text: \`Le ratio matières (Food Cost) au restaurant est de \${foodCost.toFixed(1)}%. Il y a probablement du gaspillage, des vols, ou un mauvais calibrage des portions (Standard: 28-30%).\`,
+          text: `Le ratio matières (Food Cost) au restaurant est de ${foodCost.toFixed(1)}%. Il y a probablement du gaspillage, des vols, ou un mauvais calibrage des portions (Standard: 28-30%).`,
           severity: "bad",
           icon: "utensils",
           action: "Auditer la cuisine"
@@ -96,7 +96,7 @@ export const AIEngine = {
       } else {
         insights.push({
           title: "Contrôle Qualité F&B",
-          text: \`Ratio matières maîtrisé (\${foodCost.toFixed(1)}%). Les portions sont bien calibrées.\`,
+          text: `Ratio matières maîtrisé (${foodCost.toFixed(1)}%). Les portions sont bien calibrées.`,
           severity: "good",
           icon: "utensils",
           action: "Valider les menus"
@@ -108,7 +108,7 @@ export const AIEngine = {
     if (tauxOcc < 50 && tauxOcc > 0) {
       insights.push({
         title: "Yield Marketing Requis",
-        text: \`Occupation dangereusement basse (\${tauxOcc.toFixed(1)}%). L'Intelligence recommande de lancer des offres promotionnelles 'Last Minute' ou d'ajuster les prix dynamiquement pour la nuit prochaine.\`,
+        text: `Occupation dangereusement basse (${tauxOcc.toFixed(1)}%). L'Intelligence recommande de lancer des offres promotionnelles 'Last Minute' ou d'ajuster les prix dynamiquement pour la nuit prochaine.`,
         severity: "bad",
         icon: "bullhorn",
         action: "Ajuster les tarifs"
