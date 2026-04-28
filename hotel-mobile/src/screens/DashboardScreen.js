@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import React, { useContext, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "../services/NotificationService";
