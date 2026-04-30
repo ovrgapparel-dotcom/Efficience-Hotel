@@ -7,11 +7,13 @@ import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
 import OnboardingModal from "../components/OnboardingModal";
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 const BANNER = require("../../assets/banners/banner_finance.png");
 
 export default function FinanceScreen() {
-  const { financeData, addFinanceRow } = useContext(DataContext);
+  const { financeData, addFinanceRow, roomsData = [], restaurantData = [] } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -34,6 +36,21 @@ export default function FinanceScreen() {
   const totalRevenus = financeData.filter(d => d.type === "Revenu").reduce((acc, r) => acc + r.montant, 0);
   const totalCouts = financeData.filter(d => d.type === "Coût").reduce((acc, r) => acc + r.montant, 0);
   const ebitdaJournalier = totalRevenus - totalCouts;
+
+  const exportToCSV = async () => {
+    let csv = "Date,Departement,Type,Montant(FCFA)\\n";
+    roomsData.forEach(r => { csv += `${r.date},Hebergement,Revenu,${r.total}\\n` });
+    restaurantData.forEach(r => { csv += `${r.date},Restaurant,Revenu,${r.montant}\\n` });
+    financeData.forEach(r => { csv += `${r.date},${r.departement},${r.type},${r.montant}\\n` });
+
+    try {
+      const uri = FileSystem.documentDirectory + "Bilan_Financier_Efficience.csv";
+      await FileSystem.writeAsStringAsync(uri, csv, { encoding: FileSystem.EncodingType.UTF8 });
+      await Sharing.shareAsync(uri);
+    } catch(e) {
+      console.warn("CSV Error", e);
+    }
+  };
 
   const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
 
@@ -68,6 +85,11 @@ export default function FinanceScreen() {
         <KPI title="Coûts Divers" value={`${totalCouts.toLocaleString()} CFA`} />
         <KPI title="EBITDA Dept" value={`${ebitdaJournalier.toLocaleString()} CFA`} />
       </View>
+
+      <TouchableOpacity onPress={exportToCSV} style={{backgroundColor: '#28a745', padding: 12, borderRadius: 8, marginHorizontal: 0, marginBottom: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+         <FontAwesome5 name="file-csv" size={18} color="#fff" style={{marginRight: 8}}/>
+         <Text style={{color: '#fff', fontWeight: 'bold'}}>Exporter Bilan Comptable (CSV)</Text>
+      </TouchableOpacity>
 
       <View style={[styles.form, { backgroundColor: colors.card }]}>
         <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Saisie Comptable</Text>

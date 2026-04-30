@@ -4,6 +4,9 @@ import { DataContext } from '../context/DataContext';
 import { ThemeContext } from '../context/ThemeContext';
 import OnboardingModal from '../components/OnboardingModal';
 import { FontAwesome5 } from '@expo/vector-icons';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import { Alert } from 'react-native';
 
 export default function InventoryScreen() {
   const { 
@@ -35,6 +38,20 @@ export default function InventoryScreen() {
     if (!consNom || !consQte) return;
     addConsumableRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom: consNom, categorie: consCategory, qte: parseInt(consQte, 10), sold: 0 });
     setConsNom(''); setConsQte('');
+  };
+
+  const generatePurchaseOrder = async () => {
+    const lowStockItems = consumablesData.filter(item => (item.qte > 0 && ((item.qte - (item.sold || 0)) / item.qte) < 0.2));
+    if (lowStockItems.length === 0) return Alert.alert("Aucun Besoin", "Tous vos stocks sont stables.");
+
+    const html = `<html><head><style>body { font-family: 'Helvetica'; padding: 20px; } h1 { color: #0f3460; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }</style></head><body><h1>Bon de Commande Fournisseur</h1><p>Date: ${new Date().toLocaleDateString('fr-FR')}</p><hr/><table><tr><th>Produit</th><th>Catégorie</th><th>Stock Actuel</th><th>Qté Réassort (Suggérée)</th></tr>${lowStockItems.map(item => `<tr><td>${item.nom}</td><td>${item.categorie}</td><td>${item.qte - (item.sold || 0)}</td><td>${item.qte - (item.qte - (item.sold || 0))}</td></tr>`).join('')}</table><p style="margin-top: 40px">Généré par Efficience ERP.</p></body></html>`;
+    
+    try {
+        const { uri } = await Print.printToFileAsync({ html });
+        await Sharing.shareAsync(uri);
+    } catch (e) {
+        console.warn("PDF generation error", e);
+    }
   };
 
   return (
@@ -118,6 +135,11 @@ export default function InventoryScreen() {
               <Text style={styles.buttonText}>Restocker</Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity onPress={generatePurchaseOrder} style={{backgroundColor: '#e74c3c', padding: 12, borderRadius: 8, marginBottom: 15, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+             <FontAwesome5 name="file-pdf" size={18} color="#fff" style={{marginRight: 8}}/>
+             <Text style={{color: '#fff', fontWeight: 'bold'}}>Générer Bon de Commande (PDF)</Text>
+          </TouchableOpacity>
 
           <View style={{flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border}}>
              <Text style={{flex: 2, color: colors.primary, fontWeight: 'bold', fontSize: 12}}>Article</Text>

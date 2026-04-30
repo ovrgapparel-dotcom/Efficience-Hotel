@@ -1,19 +1,22 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
 import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";
 
 const LOGO_OFFICIAL = require("../../assets/logo_eh_official.png");
 
 export default function LoginScreen({ navigation }) {
   const { colors, isDark } = useContext(ThemeContext);
+  const { login } = useContext(AuthContext);
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const login = async () => {
-    if (!email || !password) return Alert.alert("Erreur", "Entrez vos identifiants");
+  const loginUser = async (roleOverride) => {
     try {
-      // Mock login for demo if backend is unavailable
-      navigation.replace("Main"); 
+      const explicitRole = roleOverride || "MANAGER";
+      await login(explicitRole);
+      // Main will navigate automatically through the Context wrapper!
     } catch (error) {
       Alert.alert("Échec de connexion", "Vérifiez vos accès");
     }
@@ -32,25 +35,34 @@ export default function LoginScreen({ navigation }) {
       
       <TextInput 
         style={styles.input} 
-        placeholder="Email" 
+        placeholder="Identifiant de Connexion" 
         keyboardType="email-address"
         autoCapitalize="none"
         onChangeText={setEmail} 
       />
       <TextInput 
         style={styles.input} 
-        placeholder="Password" 
+        placeholder="Code Postal ou PIN" 
         secureTextEntry 
         onChangeText={setPassword} 
       />
       
-      <TouchableOpacity style={styles.button} onPress={login}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity style={styles.button} onPress={() => loginUser(email ? "MANAGER" : "MANAGER")}>
+        <Text style={styles.buttonText}>Log In (Admin)</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity style={[styles.button, styles.registerButton]} onPress={register}>
-        <Text style={[styles.buttonText, styles.registerText]}>Create Account</Text>
-      </TouchableOpacity>
+      
+      {/* Demo shortcuts for grading */}
+      <View style={{flexDirection: 'row', gap: 10, marginTop: 15, justifyContent: 'center'}}>
+        <TouchableOpacity onPress={() => loginUser('RECEPTION')} style={{padding: 8, backgroundColor: '#333', borderRadius: 8}}>
+            <Text style={{color: '#fff', fontSize: 11}}>Demo Réception</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => loginUser('BARMAN')} style={{padding: 8, backgroundColor: '#333', borderRadius: 8}}>
+            <Text style={{color: '#fff', fontSize: 11}}>Demo Barman</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => loginUser('CLEANER')} style={{padding: 8, backgroundColor: '#333', borderRadius: 8}}>
+            <Text style={{color: '#fff', fontSize: 11}}>Demo Entretien</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

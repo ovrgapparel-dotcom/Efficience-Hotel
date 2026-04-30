@@ -11,7 +11,7 @@ import OnboardingModal from "../components/OnboardingModal";
 const BANNER = require("../../assets/banners/banner_hebergement.png");
 
 export default function HotelScreen() {
-  const { roomsData, addRoomRow } = useContext(DataContext);
+  const { roomsData, addRoomRow, addHousekeepingTask } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -28,12 +28,23 @@ export default function HotelScreen() {
   const handleAdd = () => {
     if (!chambreNo || !prixNuit) return;
     const total = Number(prixNuit) * Number(nuits);
+    const cTime = Number(cleaningTime) || 30;
+
     addRoomRow({
       id: Date.now().toString(),
       date, chambreNo, type, client, statut, 
       prixNuit: Number(prixNuit), nuits: Number(nuits), total, 
-      cleaningTime: Number(cleaningTime), remarques
+      cleaningTime: cTime, remarques
     });
+
+    addHousekeepingTask({
+      id: Date.now().toString() + "_task",
+      date,
+      roomNo: chambreNo,
+      cleaningTime: cTime,
+      completed: false
+    });
+
     setChambreNo(""); setClient(""); setPrixNuit(""); setCleaningTime("30");
   };
 

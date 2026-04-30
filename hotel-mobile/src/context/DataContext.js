@@ -37,6 +37,8 @@ export const DataProvider = ({ children }) => {
   const [financeData, setFinanceData] = useState([]);
   const [inventoryData, setInventoryData] = useState([]);
   const [consumablesData, setConsumablesData] = useState([]);
+  const [clientsData, setClientsData] = useState([]);
+  const [housekeepingData, setHousekeepingData] = useState([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,6 +49,8 @@ export const DataProvider = ({ children }) => {
         const finance = await storage.getItem('@finance');
         const inventory = await storage.getItem('@inventory');
         const consumables = await storage.getItem('@consumables');
+        const clients = await storage.getItem('@clients');
+        const housekeeping = await storage.getItem('@housekeeping');
         const posSales = await storage.getItem('@posSales');
 
         if (rooms) setRoomsData(JSON.parse(rooms));
@@ -78,6 +82,9 @@ export const DataProvider = ({ children }) => {
           setConsumablesData(defaultConsumables);
           await storage.setItem('@consumables', JSON.stringify(defaultConsumables));
         }
+
+        if (clients) setClientsData(JSON.parse(clients));
+        if (housekeeping) setHousekeepingData(JSON.parse(housekeeping));
       } catch (err) {
         console.warn("Failed to load local data", err);
       }
@@ -155,6 +162,24 @@ export const DataProvider = ({ children }) => {
   const totalNettoyageStock = consumablesData.filter(c => c.categorie === 'Nettoyage').reduce((acc, c) => acc + c.qte, 0);
   const remainingNettoyage = totalNettoyageStock - hotelUsage;
 
+  const addClientRow = async (row) => {
+    const newData = [row, ...clientsData];
+    setClientsData(newData);
+    await storage.setItem('@clients', JSON.stringify(newData));
+  };
+
+  const addHousekeepingTask = async (task) => {
+    const newData = [task, ...housekeepingData];
+    setHousekeepingData(newData);
+    await storage.setItem('@housekeeping', JSON.stringify(newData));
+  };
+
+  const validateHousekeepingTask = async (id) => {
+    const newData = housekeepingData.map(t => t.id === id ? { ...t, completed: true } : t);
+    setHousekeepingData(newData);
+    await storage.setItem('@housekeeping', JSON.stringify(newData));
+  };
+
   const resetAllData = async () => {
     setRoomsData([]);
     setRestaurantData([]);
@@ -173,6 +198,8 @@ export const DataProvider = ({ children }) => {
       financeData, addFinanceRow,
       inventoryData, addInventoryRow,
       consumablesData, addConsumableRow, addPOSSale,
+      clientsData, addClientRow,
+      housekeepingData, addHousekeepingTask, validateHousekeepingTask,
       remainingNettoyage,
       monthlyInventoryCost,
       resetAllData
