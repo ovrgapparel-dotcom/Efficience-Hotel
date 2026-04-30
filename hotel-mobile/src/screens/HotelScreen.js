@@ -41,6 +41,9 @@ export default function HotelScreen() {
       id: Date.now().toString() + "_task",
       date,
       roomNo: chambreNo,
+      roomType: type || 'Standard',
+      clientName: client,
+      nuits: Number(nuits),
       cleaningTime: cTime,
       completed: false
     });

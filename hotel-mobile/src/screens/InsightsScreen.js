@@ -6,7 +6,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { AIEngine } from "../services/AIEngine";
 
 export default function InsightsScreen() {
-  const { roomsData, restaurantData, hrData, financeData } = useContext(DataContext);
+  const { roomsData, restaurantData, hrData, financeData, housekeepingData, consumablesData } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [isProcessing, setIsProcessing] = useState(true);
@@ -18,7 +18,7 @@ export default function InsightsScreen() {
     Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start();
 
     setTimeout(() => {
-      const generatedInsights = AIEngine.analyze({ roomsData, restaurantData, hrData, financeData });
+      const generatedInsights = AIEngine.analyze({ roomsData, restaurantData, hrData, financeData, housekeepingData, consumablesData });
       setInsights(generatedInsights);
       setIsProcessing(false);
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }).start();

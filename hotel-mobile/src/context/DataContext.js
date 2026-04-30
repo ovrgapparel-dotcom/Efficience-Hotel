@@ -169,9 +169,33 @@ export const DataProvider = ({ children }) => {
   };
 
   const addHousekeepingTask = async (task) => {
-    const newData = [task, ...housekeepingData];
+    // Enrich task with supply allocation estimate
+    const suppliesPerRoom = 1; // 1 unit of cleaning supplies per room
+    const enrichedTask = {
+      ...task,
+      suppliesUsed: suppliesPerRoom,
+      checkoutDate: calculateCheckoutDate(task.date, task.nuits || 1)
+    };
+    const newData = [enrichedTask, ...housekeepingData];
     setHousekeepingData(newData);
     await storage.setItem('@housekeeping', JSON.stringify(newData));
+
+    // Auto-deduct cleaning supplies from consumables
+    let updatedConsumables = [...consumablesData];
+    const cleaningIdx = updatedConsumables.findIndex(c => c.categorie === 'Nettoyage');
+    if (cleaningIdx >= 0) {
+      updatedConsumables[cleaningIdx].sold = (updatedConsumables[cleaningIdx].sold || 0) + suppliesPerRoom;
+      setConsumablesData(updatedConsumables);
+      await storage.setItem('@consumables', JSON.stringify(updatedConsumables));
+    }
+  };
+
+  const calculateCheckoutDate = (checkinDate, nuits) => {
+    try {
+      const d = new Date(checkinDate);
+      d.setDate(d.getDate() + (nuits || 1));
+      return d.toISOString().split('T')[0];
+    } catch { return checkinDate; }
   };
 
   const validateHousekeepingTask = async (id) => {
