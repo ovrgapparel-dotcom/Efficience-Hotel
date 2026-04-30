@@ -16,6 +16,7 @@ export default function HrScreen() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [nom, setNom] = useState("");
   const [poste, setPoste] = useState("");
+  const [shift, setShift] = useState("Jour"); // Jour, Nuit
   const [heures, setHeures] = useState("");
   const [taux, setTaux] = useState("");
   const [remarques, setRemarques] = useState("");
@@ -25,9 +26,9 @@ export default function HrScreen() {
     const salaire = Number(heures) * Number(taux);
     addHrRow({
       id: Date.now().toString(),
-      date, nom, poste, heures: Number(heures), taux: Number(taux), salaire, remarques
+      date, nom, poste, shift, heures: Number(heures), taux: Number(taux), salaire, remarques
     });
-    setNom(""); setPoste(""); setHeures(""); setTaux("");
+    setNom(""); setPoste(""); setHeures(""); setTaux(""); setShift("Jour");
   };
 
   const totalRevenuHotel = roomsData.reduce((acc, r) => acc + (r.total || 0), 0);
@@ -39,6 +40,18 @@ export default function HrScreen() {
 
   const productivite = heuresTotales > 0 ? (CA_TOTAL / heuresTotales).toFixed(0) : 0;
   const ratioMasse = CA_TOTAL > 0 ? ((coutTotalMO / CA_TOTAL) * 100).toFixed(1) : 0;
+
+  // New Metrics
+  const totalCleaningMins = roomsData.reduce((acc, r) => acc + (r.cleaningTime || 0), 0);
+  const totalPrepMins = restaurantData.reduce((acc, r) => acc + ((r.prepTime || 0) * (r.couverts || 1)), 0);
+  const requiredOpHours = ((totalCleaningMins + totalPrepMins) / 60).toFixed(1);
+
+  const isHrDeficient = heuresTotales < Number(requiredOpHours);
+
+  const frontDeskData = hrData.filter(r => r.poste.toLowerCase().includes("réception") || r.poste.toLowerCase().includes("reception"));
+  const hasDayShift = frontDeskData.some(r => r.shift === "Jour");
+  const hasNightShift = frontDeskData.some(r => r.shift === "Nuit");
+  const frontDeskCoverageOk = frontDeskData.length === 0 ? true : (hasDayShift && hasNightShift);
 
   const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
 
@@ -52,16 +65,32 @@ export default function HrScreen() {
       />
       <View style={styles.kpiContainer}>
         <KPI title="Coût Total MO" value={`${coutTotalMO.toLocaleString()} CFA`} />
-        <KPI title="Heures Totales" value={`${heuresTotales} H`} />
-        <KPI title="Productivité" value={`${Number(productivite).toLocaleString()} CFA/H`} />
+        <KPI title="Hs Totales" value={`${heuresTotales} H`} />
         <KPI title="Ratio MS" value={`${ratioMasse} %`} />
+        <KPI title="Hs Nécessaires (H+R)" value={`${requiredOpHours} H`} />
       </View>
+      
+      {isHrDeficient && (
+        <View style={styles.alertBox}>
+          <FontAwesome5 name="exclamation-circle" size={20} color="#ff4444" />
+          <Text style={styles.alertText}>Alerte: Rotation insuffisante! Les heures nécessaires dépassent le volume planifié.</Text>
+        </View>
+      )}
+
+      {(!frontDeskCoverageOk && frontDeskData.length > 0) && (
+        <View style={styles.alertBox}>
+          <FontAwesome5 name="clock" size={20} color="#ffaa00" />
+          <Text style={styles.alertText}>Alerte Réception: Couverture des shifts (Jour/Nuit) incomplète ou manquante.</Text>
+        </View>
+      )}
 
       <View style={[styles.form, { backgroundColor: colors.card }]}>
         <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Nouvelle Entrée</Text>
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Date (YYYY-MM-DD)" value={date} onChangeText={setDate} />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nom de l'employé" value={nom} onChangeText={setNom} />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Poste (Réception, Ménage...)" value={poste} onChangeText={setPoste} />
+        <Text style={{color: colors.text, marginBottom: 4, fontSize: 12}}>Type de Shift (Jour / Nuit)</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Shift (Jour / Nuit)" value={shift} onChangeText={setShift} />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Heures travaillées" value={heures} onChangeText={setHeures} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Taux horaire (FCFA)" value={taux} onChangeText={setTaux} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
@@ -82,6 +111,7 @@ export default function HrScreen() {
             <Text style={[styles.col, { color: colors.text }]}>Date</Text>
             <Text style={[styles.col, { color: colors.text }]}>Employé</Text>
             <Text style={[styles.col, { color: colors.text }]}>Poste</Text>
+            <Text style={[styles.col, { color: colors.text }]}>Shift</Text>
             <Text style={[styles.col, { color: colors.text }]}>Heures</Text>
             <Text style={[styles.col, { color: colors.text }]}>Taux</Text>
             <Text style={[styles.col, { color: colors.text }]}>Salaire J.</Text>
@@ -91,6 +121,7 @@ export default function HrScreen() {
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.date}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.nom}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.poste}</Text>
+              <Text style={[styles.col, { color: colors.textMuted }]}>{row.shift}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.heures}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.taux}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.salaire}</Text>
@@ -113,5 +144,7 @@ const styles = StyleSheet.create({
   tableScroll: { padding: 10, borderRadius: 8 },
   tableHeader: { flexDirection: "row", borderBottomWidth: 2, paddingBottom: 10, marginBottom: 5 },
   tableRow: { flexDirection: "row", borderBottomWidth: 1, paddingVertical: 10 },
-  col: { width: 100, textAlign: "center", fontSize: 12 }
+  col: { width: 90, textAlign: "center", fontSize: 12 },
+  alertBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#3a1111", padding: 12, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: "#ff4444" },
+  alertText: { color: "#fff", marginLeft: 10, fontSize: 13, flex: 1 }
 });

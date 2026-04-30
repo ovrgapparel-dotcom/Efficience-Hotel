@@ -1,13 +1,18 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
     password TEXT NOT NULL
 );
 
-CREATE TABLE simulations (
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.users FROM anon, authenticated;
+
+CREATE TABLE IF NOT EXISTS simulations (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL, -- hotel ou restaurant
     data JSONB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE simulations ENABLE ROW LEVEL SECURITY;

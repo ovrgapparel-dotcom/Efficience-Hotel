@@ -20,6 +20,7 @@ export default function HotelScreen() {
   const [statut, setStatut] = useState("Occupée");
   const [prixNuit, setPrixNuit] = useState("");
   const [nuits, setNuits] = useState("1");
+  const [cleaningTime, setCleaningTime] = useState("30");
   const [remarques, setRemarques] = useState("");
 
   const handleAdd = () => {
@@ -28,9 +29,10 @@ export default function HotelScreen() {
     addRoomRow({
       id: Date.now().toString(),
       date, chambreNo, type, client, statut, 
-      prixNuit: Number(prixNuit), nuits: Number(nuits), total, remarques
+      prixNuit: Number(prixNuit), nuits: Number(nuits), total, 
+      cleaningTime: Number(cleaningTime), remarques
     });
-    setChambreNo(""); setClient(""); setPrixNuit("");
+    setChambreNo(""); setClient(""); setPrixNuit(""); setCleaningTime("30");
   };
 
   const totalRevenu = roomsData.reduce((acc, row) => acc + row.total, 0);
@@ -42,6 +44,8 @@ export default function HotelScreen() {
   const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
   const tauxOcc = ((chambresOccupees / TOTAL_CHAMBRES) * 100).toFixed(1);
   const revpar = TOTAL_CHAMBRES > 0 ? (totalRevenu / TOTAL_CHAMBRES).toFixed(0) : 0;
+  const totalCleaningMins = roomsData.reduce((acc, row) => acc + (row.cleaningTime || 0), 0);
+  const totalCleaningHours = (totalCleaningMins / 60).toFixed(1);
 
   const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
 
@@ -59,6 +63,7 @@ export default function HotelScreen() {
         <KPI title="Revenu" value={`${totalRevenu.toLocaleString()} CFA`} />
         <KPI title="RevPAR" value={`${Number(revpar).toLocaleString()} CFA`} />
         <KPI title="DMS" value={`${dms} N`} />
+        <KPI title="Ménage" value={`${totalCleaningHours} H`} />
       </View>
 
       <View style={[styles.form, { backgroundColor: colors.card }]}>
@@ -69,7 +74,10 @@ export default function HotelScreen() {
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nom du Client" value={client} onChangeText={setClient} />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Statut" value={statut} onChangeText={setStatut} />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Prix/Nuit (FCFA)" value={prixNuit} onChangeText={setPrixNuit} keyboardType="numeric" />
+        <Text style={{color: colors.text, marginBottom: 4, fontSize: 12}}>Nuits</Text>
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nuits" value={nuits} onChangeText={setNuits} keyboardType="numeric" />
+        <Text style={{color: colors.text, marginBottom: 4, fontSize: 12}}>Temps Nettoyage (min/chambre)</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Temps Nettoyage (min/chambre)" value={cleaningTime} onChangeText={setCleaningTime} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
         
         <View style={{ marginTop: 10 }}>

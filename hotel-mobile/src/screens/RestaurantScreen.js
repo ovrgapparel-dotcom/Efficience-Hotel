@@ -18,6 +18,7 @@ export default function RestaurantScreen() {
   const [couverts, setCouverts] = useState("");
   const [ventes, setVentes] = useState("");
   const [coutMatiere, setCoutMatiere] = useState("");
+  const [prepTime, setPrepTime] = useState("15");
   const [remarques, setRemarques] = useState("");
 
   const handleAdd = () => {
@@ -26,9 +27,10 @@ export default function RestaurantScreen() {
     addRestoRow({
       id: Date.now().toString(),
       date, service, couverts: Number(couverts),
-      ventes: Number(ventes), coutMatiere: Number(coutMatiere), foodCostPerc, remarques
+      ventes: Number(ventes), coutMatiere: Number(coutMatiere), foodCostPerc,
+      prepTime: Number(prepTime), remarques
     });
-    setCouverts(""); setVentes(""); setCoutMatiere("");
+    setCouverts(""); setVentes(""); setCoutMatiere(""); setPrepTime("15");
   };
 
   const totalVentes = restaurantData.reduce((acc, row) => acc + row.ventes, 0);
@@ -38,6 +40,9 @@ export default function RestaurantScreen() {
   const avgFoodCost = totalVentes > 0 ? ((totalCout / totalVentes) * 100).toFixed(1) : 0;
   const ticketMoyen = totalCouverts > 0 ? (totalVentes / totalCouverts).toFixed(0) : 0;
   const margeBrute = totalVentes > 0 ? (((totalVentes - totalCout) / totalVentes) * 100).toFixed(1) : 0;
+
+  const totalPrepMins = restaurantData.reduce((acc, row) => acc + ((row.prepTime || 0) * (row.couverts || 1)), 0);
+  const totalPrepHours = (totalPrepMins / 60).toFixed(1);
 
   const inputStyle = [styles.input, { backgroundColor: colors.inputBg, color: colors.inputText, borderColor: colors.border }];
 
@@ -54,6 +59,7 @@ export default function RestaurantScreen() {
         <KPI title="Food Cost" value={`${avgFoodCost} %`} />
         <KPI title="Ticket Moy." value={`${Number(ticketMoyen).toLocaleString()} CFA`} />
         <KPI title="Marge Brute" value={`${margeBrute} %`} />
+        <KPI title="Tps Prod." value={`${totalPrepHours} H`} />
       </View>
 
       <View style={[styles.form, { backgroundColor: colors.card }]}>
@@ -63,6 +69,8 @@ export default function RestaurantScreen() {
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Nombre de couverts" value={couverts} onChangeText={setCouverts} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Ventes (FCFA)" value={ventes} onChangeText={setVentes} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Coût matières (FCFA)" value={coutMatiere} onChangeText={setCoutMatiere} keyboardType="numeric" />
+        <Text style={{color: colors.text, marginBottom: 4, fontSize: 12}}>Temps préparation (min/couvert)</Text>
+        <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Temps prép. (min/couvert)" value={prepTime} onChangeText={setPrepTime} keyboardType="numeric" />
         <TextInput style={inputStyle} placeholderTextColor={colors.textMuted} placeholder="Remarques" value={remarques} onChangeText={setRemarques} />
         
         <View style={{ marginTop: 10 }}>
