@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import { NotificationService } from "../services/NotificationService";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
+import OnboardingModal from "../components/OnboardingModal";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
 import AppFooter from "../components/AppFooter";
@@ -15,6 +16,7 @@ const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 export default function DashboardScreen({ navigation }) {
   const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
+  const [helpVisible, setHelpVisible] = useState(false);
 
   const chartFade = useRef(new Animated.Value(0)).current;
   const chartScale = useRef(new Animated.Value(0.95)).current;
@@ -87,11 +89,25 @@ export default function DashboardScreen({ navigation }) {
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       
       <View style={styles.topBar}>
-        <View style={{ width: 10 }} /> 
+        <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.themeToggle}>
+          <FontAwesome5 name="question-circle" size={24} color={colors.primary} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
           <FontAwesome5 name={isDark ? "sun" : "moon"} size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
+
+      <OnboardingModal 
+        visible={helpVisible} 
+        onClose={() => setHelpVisible(false)}
+        storageKey="@onboard_dashboard"
+        title="Guide: Dashboard Principal"
+        steps={[
+          "KPIs Globaux: Surveillez le Taux d'Occupation, Revenus Globaux et votre rentabilité Nette en direct.",
+          "Alertes: Restez alerté si le personnel est insuffisant ou si le stock s'épuise (Alertes Visuelles).",
+          "Navigation: Utilisez les onglets ci-dessous pour gérer l'Hôtel, le Restaurant, les RH, la Finance, et les Stocks séparément."
+        ]}
+      />
 
       <DepartmentBanner
         image={BANNER_DASHBOARD}

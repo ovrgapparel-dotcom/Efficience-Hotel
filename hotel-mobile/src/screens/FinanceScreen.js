@@ -1,11 +1,12 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
+import OnboardingModal from "../components/OnboardingModal";
 
 const BANNER = require("../../assets/banners/banner_finance.png");
 
@@ -13,6 +14,7 @@ export default function FinanceScreen() {
   const { financeData, addFinanceRow } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
+  const [helpVisible, setHelpVisible] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState("Coût"); 
   const [depart, setDepart] = useState("Général");
@@ -37,12 +39,30 @@ export default function FinanceScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <DepartmentBanner
-        gradientColors={["#1A0A00", "#5A2800"]}
-        title="Finance & Trésorerie"
-        subtitle="Comptabilité & Flux de Fonds"
-        icon={<FontAwesome5 name="chart-line" size={26} color="#F0A500" />}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <DepartmentBanner
+          gradientColors={["#1A0A00", "#5A2800"]}
+          title="Finance & Trésorerie"
+          subtitle="Comptabilité & Flux de Fonds"
+          icon={<FontAwesome5 name="chart-line" size={26} color="#F0A500" />}
+        />
+        <TouchableOpacity onPress={() => setHelpVisible(true)} style={{ padding: 10 }}>
+          <FontAwesome5 name="question-circle" size={24} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <OnboardingModal 
+        visible={helpVisible} 
+        onClose={() => setHelpVisible(false)}
+        storageKey="@onboard_finance"
+        title="Guide: Finance"
+        steps={[
+          "Saisie Manuelle: Ajoutez toute dépense externe ou encaissement annexe à votre chiffre d'affaires ici.",
+          "Net Profit: Ces dépenses opérationnelles réduiront directement le 'Profit Net' calculé sur votre Dashboard.",
+          "Note: Les coûts des d'actifs amortis au niveau de l'Inventaire ne sont plus listés ici pour éviter les doubles comptages."
+        ]}
       />
+
       <View style={styles.kpiContainer}>
         <KPI title="Revenus Extra" value={`${totalRevenus.toLocaleString()} CFA`} />
         <KPI title="Coûts Divers" value={`${totalCouts.toLocaleString()} CFA`} />

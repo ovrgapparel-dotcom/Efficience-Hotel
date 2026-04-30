@@ -1,11 +1,12 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
+import OnboardingModal from "../components/OnboardingModal";
 
 const BANNER = require("../../assets/banners/banner_rh.png");
 
@@ -13,6 +14,7 @@ export default function HrScreen() {
   const { hrData, addHrRow, roomsData, restaurantData } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
+  const [helpVisible, setHelpVisible] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [nom, setNom] = useState("");
   const [poste, setPoste] = useState("");
@@ -57,6 +59,25 @@ export default function HrScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <Text style={[styles.title, { color: colors.text }]}>Pointage HR & Mouvement</Text>
+        <TouchableOpacity onPress={() => setHelpVisible(true)} style={{ padding: 5 }}>
+          <FontAwesome5 name="question-circle" size={24} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <OnboardingModal 
+        visible={helpVisible} 
+        onClose={() => setHelpVisible(false)}
+        storageKey="@onboard_hr"
+        title="Guide: HR & Rotation"
+        steps={[
+          "Shift Rotation: Le planning se divise désormais en shifts obligatoires (Jour / Nuit).",
+          "Alerte de Couverture de Garde: Si la réception ou d'autres départements ne sont pas couverts pendant la Nuit, une alerte est déclenchée !",
+          "Heures Prestées vs Hébergement: Les heures validées par les employés doivent couvrir l'estimation de temps validée dans les sélections du Restaurant et de l'Hôtel."
+        ]}
+      />
+
       <DepartmentBanner
         gradientColors={["#8B6800", "#F0A500"]}
         title="Ressources Humaines"

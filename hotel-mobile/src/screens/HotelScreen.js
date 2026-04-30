@@ -1,11 +1,12 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
+import OnboardingModal from "../components/OnboardingModal";
 
 const BANNER = require("../../assets/banners/banner_hebergement.png");
 
@@ -13,6 +14,7 @@ export default function HotelScreen() {
   const { roomsData, addRoomRow } = useContext(DataContext);
   const { isDark, colors } = useContext(ThemeContext);
 
+  const [helpVisible, setHelpVisible] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [chambreNo, setChambreNo] = useState("");
   const [type, setType] = useState("");
@@ -51,6 +53,25 @@ export default function HotelScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={[styles.title, { color: colors.text }]}>Gestion Hôtel</Text>
+        <TouchableOpacity onPress={() => setHelpVisible(true)} style={{ padding: 5 }}>
+          <FontAwesome5 name="question-circle" size={24} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <OnboardingModal 
+        visible={helpVisible} 
+        onClose={() => setHelpVisible(false)}
+        storageKey="@onboard_hotel"
+        title="Guide: Gestion Hôtel"
+        steps={[
+          "Enregistrement des Nuitées : Saisissez la chambre et son prix lors de l'enregistrement du client.",
+          "Temps de Nettoyage : Estimez le temps de nettoyage ! L'application l'additionnera automatiquement comme charge de travail dans l'onglet RH (Ressources Humaines).",
+          "Consommables : Chaque visite génère automatiquement l'utilisation d'1 unité de fournitures hôtelières dans le module Stock !"
+        ]}
+      />
+
       <DepartmentBanner
         image={BANNER}
         gradientColors={["#7A3200", "#C25A00"]}
