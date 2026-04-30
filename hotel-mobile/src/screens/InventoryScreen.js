@@ -7,6 +7,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
+import ReportDownloader from '../components/ReportDownloader';
 
 export default function InventoryScreen() {
   const { 
@@ -135,6 +136,19 @@ export default function InventoryScreen() {
               <Text style={styles.buttonText}>Restocker</Text>
             </TouchableOpacity>
           </View>
+
+          <ReportDownloader
+            title="Rapport Inventaire & Consommables"
+            data={consumablesData}
+            dateField="date"
+            sectionColor="#e74c3c"
+            columns={[
+              { key: 'nom', label: 'Article' },
+              { key: 'categorie', label: 'Catégorie' },
+              { key: 'qte', label: 'Stock Initial' },
+              { key: 'sold', label: 'Vendus/Utilisés' },
+            ]}
+          />
 
           <TouchableOpacity onPress={generatePurchaseOrder} style={{backgroundColor: '#e74c3c', padding: 12, borderRadius: 8, marginBottom: 15, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
              <FontAwesome5 name="file-pdf" size={18} color="#fff" style={{marginRight: 8}}/>

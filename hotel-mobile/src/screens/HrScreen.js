@@ -7,6 +7,7 @@ import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
 import OnboardingModal from "../components/OnboardingModal";
+import ReportDownloader from "../components/ReportDownloader";
 
 const BANNER = require("../../assets/banners/banner_rh.png");
 
@@ -124,6 +125,22 @@ export default function HrScreen() {
           />
         </View>
       </View>
+
+      <ReportDownloader
+        title="Rapport Ressources Humaines"
+        data={hrData}
+        dateField="date"
+        sectionColor="#F0A500"
+        columns={[
+          { key: 'date', label: 'Date' },
+          { key: 'nom', label: 'Employé' },
+          { key: 'poste', label: 'Poste' },
+          { key: 'shift', label: 'Shift' },
+          { key: 'heures', label: 'Heures' },
+          { key: 'taux', label: 'Taux' },
+          { key: 'salaire', label: 'Salaire (FCFA)' },
+        ]}
+      />
 
       <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Historique Quotidien</Text>
       <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>

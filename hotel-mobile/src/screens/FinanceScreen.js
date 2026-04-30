@@ -9,6 +9,7 @@ import DepartmentBanner from "../components/DepartmentBanner";
 import OnboardingModal from "../components/OnboardingModal";
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import ReportDownloader from '../components/ReportDownloader';
 
 const BANNER = require("../../assets/banners/banner_finance.png");
 
@@ -85,6 +86,21 @@ export default function FinanceScreen() {
         <KPI title="Coûts Divers" value={`${totalCouts.toLocaleString()} CFA`} />
         <KPI title="EBITDA Dept" value={`${ebitdaJournalier.toLocaleString()} CFA`} />
       </View>
+
+      <ReportDownloader
+        title="Rapport Finance & Trésorerie"
+        data={financeData}
+        dateField="date"
+        sectionColor="#F0A500"
+        columns={[
+          { key: 'date', label: 'Date' },
+          { key: 'type', label: 'Type' },
+          { key: 'departement', label: 'Département' },
+          { key: 'description', label: 'Description' },
+          { key: 'montant', label: 'Montant (FCFA)' },
+          { key: 'paiement', label: 'Paiement' },
+        ]}
+      />
 
       <TouchableOpacity onPress={exportToCSV} style={{backgroundColor: '#28a745', padding: 12, borderRadius: 8, marginHorizontal: 0, marginBottom: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
          <FontAwesome5 name="file-csv" size={18} color="#fff" style={{marginRight: 8}}/>

@@ -5,6 +5,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { FontAwesome5 } from '@expo/vector-icons';
 import DepartmentBanner from '../components/DepartmentBanner';
 import KPI from '../components/KPI';
+import ReportDownloader from '../components/ReportDownloader';
 
 export default function EntretienScreen() {
   const { housekeepingData, validateHousekeepingTask, consumablesData, roomsData } = useContext(DataContext);
@@ -70,6 +71,22 @@ export default function EntretienScreen() {
           </View>
         )}
       </View>
+
+      {/* Report Downloader */}
+      <ReportDownloader
+        title="Rapport Entretien & Nettoyage"
+        data={housekeepingData}
+        dateField="date"
+        sectionColor="#28a745"
+        columns={[
+          { key: 'date', label: 'Date' },
+          { key: 'roomNo', label: 'Chambre' },
+          { key: 'clientName', label: 'Client' },
+          { key: 'cleaningTime', label: 'Durée (min)' },
+          { key: 'suppliesUsed', label: 'Fournitures' },
+          { key: 'nuits', label: 'Nuits' },
+        ]}
+      />
 
       {/* Active Tasks */}
       <Text style={[styles.sectionTitle, { color: colors.text }]}>

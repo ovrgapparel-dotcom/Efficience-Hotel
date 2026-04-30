@@ -7,6 +7,7 @@ import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
 import DepartmentBanner from "../components/DepartmentBanner";
 import OnboardingModal from "../components/OnboardingModal";
+import ReportDownloader from "../components/ReportDownloader";
 
 const BANNER = require("../../assets/banners/banner_hebergement.png");
 
@@ -123,6 +124,22 @@ export default function HotelScreen() {
           />
         </View>
       </View>
+
+      <ReportDownloader
+        title="Rapport Hébergement"
+        data={roomsData}
+        dateField="date"
+        sectionColor="#C25A00"
+        columns={[
+          { key: 'date', label: 'Date' },
+          { key: 'chambreNo', label: 'Chambre' },
+          { key: 'client', label: 'Client' },
+          { key: 'statut', label: 'Statut' },
+          { key: 'prixNuit', label: 'Prix/Nuit' },
+          { key: 'nuits', label: 'Nuits' },
+          { key: 'total', label: 'Total (FCFA)' },
+        ]}
+      />
 
       <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Historique Quotidien</Text>
       <ScrollView horizontal style={[styles.tableScroll, { backgroundColor: colors.card }]}>
