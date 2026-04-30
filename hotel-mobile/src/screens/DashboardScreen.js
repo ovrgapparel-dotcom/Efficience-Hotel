@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "../services/NotificationService";
 import { DataContext } from "../context/DataContext";
 import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";
 import KPI from "../components/KPI";
 import OnboardingModal from "../components/OnboardingModal";
 import DynamicButton from "../components/DynamicButton";
@@ -16,7 +17,9 @@ const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 export default function DashboardScreen({ navigation }) {
   const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
+  const { logout, pins, updatePin } = useContext(AuthContext);
   const [helpVisible, setHelpVisible] = useState(false);
+  const [securityVisible, setSecurityVisible] = useState(false);
 
   const chartFade = useRef(new Animated.Value(0)).current;
   const chartScale = useRef(new Animated.Value(0.95)).current;
@@ -87,15 +90,7 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.themeToggle}>
-          <FontAwesome5 name="question-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
-          <FontAwesome5 name={isDark ? "sun" : "moon"} size={20} color={colors.text} />
-        </TouchableOpacity>
-      </View>
+      <View style={{ height: 10 }} />
 
       <OnboardingModal 
         visible={helpVisible} 
@@ -170,6 +165,35 @@ export default function DashboardScreen({ navigation }) {
 
       <View style={{ marginTop: 20 }}>
         <DynamicButton 
+           title="Gestion Sécurité & PINs" 
+           onPress={() => setSecurityVisible(!securityVisible)} 
+           icon={<FontAwesome5 name="key" size={24} color="#fff" />} 
+           width="100%" 
+           color={colors.primary} hoverColor={colors.primaryHover} isDark={isDark}
+        />
+      </View>
+
+      {securityVisible && (
+        <View style={[styles.securityPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={{ color: colors.text, fontWeight: 'bold', marginBottom: 15 }}>Configuration des Accès Services</Text>
+          {Object.keys(pins).map(role => (
+            <View key={role} style={styles.pinRow}>
+              <Text style={{ color: colors.textMuted, flex: 1 }}>{role}:</Text>
+              <TextInput 
+                style={[styles.pinDisplay, { color: colors.text, borderColor: colors.border }]}
+                defaultValue={pins[role]}
+                keyboardType="numeric"
+                maxLength={4}
+                onChangeText={(val) => { if(val.length === 4) updatePin(role, val); }}
+              />
+            </View>
+          ))}
+          <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 10 }}>💡 Les modifications sont enregistrées automatiquement.</Text>
+        </View>
+      )}
+
+      <View style={{ marginTop: 20 }}>
+        <DynamicButton 
            title="Intelligence Exécutive (SAP)" 
            onPress={() => navigation.navigate("Insights")} 
            icon={<FontAwesome5 name="brain" size={32} color="#fff" />} 
@@ -199,6 +223,7 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, borderWidth: 1 },
   appName: { fontSize: 20, fontWeight: "bold" },
   themeToggle: { padding: 8 },
   kpiContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
@@ -208,5 +233,8 @@ const styles = StyleSheet.create({
   alertItem: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, borderLeftWidth: 4, marginBottom: 8 },
   resetBtn: { padding: 15, borderRadius: 8, marginTop: 30, borderWidth: 1, alignItems: "center" },
   resetText: { fontWeight: "bold" },
-  testNotifyBtn: { padding: 15, borderRadius: 8, marginTop: 15, borderWidth: 1, alignItems: "center", flexDirection: 'row', justifyContent: 'center' }
+  testNotifyBtn: { padding: 15, borderRadius: 8, marginTop: 15, borderWidth: 1, alignItems: "center", flexDirection: 'row', justifyContent: 'center' },
+  securityPanel: { marginTop: 10, padding: 20, borderRadius: 12, borderWidth: 1 },
+  pinRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  pinDisplay: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, width: 80, textAlign: 'center', fontWeight: 'bold' }
 });

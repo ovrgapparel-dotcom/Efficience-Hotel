@@ -4,8 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [userRole, setUserRole] = useState(null); // null means not logged in
+  const [userRole, setUserRole] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
+  const [pins, setPins] = useState({
+    MANAGER: '1111',
+    RECEPTION: '2222',
+    BARMAN: '3333',
+    CLEANER: '4444'
+  });
 
   useEffect(() => {
     const loadSession = async () => {
@@ -13,6 +19,10 @@ export const AuthProvider = ({ children }) => {
         const savedRole = await AsyncStorage.getItem('@userRole');
         if (savedRole) {
           setUserRole(savedRole);
+        }
+        const savedPins = await AsyncStorage.getItem('@pins');
+        if (savedPins) {
+          setPins(JSON.parse(savedPins));
         }
       } catch (e) {
         console.warn("Auth load error", e);
@@ -22,6 +32,23 @@ export const AuthProvider = ({ children }) => {
     };
     loadSession();
   }, []);
+
+  const loginWithPin = async (inputPin) => {
+    // Find role matching the pin
+    const role = Object.keys(pins).find(key => pins[key] === inputPin);
+    if (role) {
+      setUserRole(role);
+      await AsyncStorage.setItem('@userRole', role);
+      return { success: true, role };
+    }
+    return { success: false };
+  };
+
+  const updatePin = async (role, newPin) => {
+    const newPins = { ...pins, [role]: newPin };
+    setPins(newPins);
+    await AsyncStorage.setItem('@pins', JSON.stringify(newPins));
+  };
 
   const login = async (role) => {
     setUserRole(role);
@@ -34,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userRole, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ userRole, isLoading, login, loginWithPin, logout, pins, updatePin }}>
       {children}
     </AuthContext.Provider>
   );
