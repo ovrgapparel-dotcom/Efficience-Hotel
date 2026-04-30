@@ -1,11 +1,13 @@
-# Manuel de l'Utilisateur - Efficience Hotel ERP v2.0 (Premium Enterprise)
+# Manuel de l'Utilisateur - Efficience Hotel ERP v2.1 (Premium Enterprise)
 
-Bienvenue dans **Efficience Hotel**, votre système intelligent de planification des ressources hôtelières. Cette version 2.0 intègre une sécurité bancaire, un moteur d'intelligence artificielle cross-départemental (SAP) et une automatisation complète du cycle de vie des chambres.
+Bienvenue dans **Efficience Hotel**, votre système intelligent de planification des ressources hôtelières. Cette version intègre une sécurité bancaire, un moteur d'intelligence artificielle cross-départemental (SAP), une automatisation complète du cycle de vie des chambres, et un système de rapports PDF téléchargeables pour chaque département.
 
 ---
 
-## 0. Accès & Sécurité (Nouveau)
+## 0. Accès & Sécurité
+
 L'accès au système est protégé par un processus en deux étapes :
+
 1. **Sélection du Rôle** : Choisissez votre département (Admin, Réception, Bar/Restaurant, Entretien).
 2. **Code PIN** : Entrez votre code personnel à 4 chiffres.
    - **Master Key** : Le code `OV99` permet un accès administrateur total en toute circonstance.
@@ -17,14 +19,17 @@ L'accès au système est protégé par un processus en deux étapes :
 
 Le **Dashboard (Tableau de bord)** est votre tour de contrôle.
 
-- **KPIs (Indicateurs Clés de Performance)** : Affiche le taux d'occupation, le revenu global, la rentabilité brute, l'EBITDA et l'efficience du personnel.
-- **Intelligence SAP (AIEngine)** : Un bouton dédié vous permet de générer un diagnostic complet de l'hôtel. L'IA corrèle les données entre les départements pour vous alerter sur :
-  - Les décalages entre réservations et nettoyages.
-  - Les prévisions de rupture de stock de fournitures.
-  - Les surcharges de travail de l'équipe d'entretien.
-  - L'efficience salariale par rapport au chiffre d'affaires.
+- **KPIs** : Taux d'occupation, revenu global, rentabilité brute, EBITDA et efficience du personnel.
+- **Intelligence SAP (AIEngine)** : Diagnostic complet de l'hôtel corrélant les données entre départements :
+  - Décalages réservations / nettoyages.
+  - Prévisions de rupture de stock de fournitures.
+  - Surcharges de travail de l'équipe d'entretien.
+  - Efficience salariale par rapport au chiffre d'affaires.
+  - Rendement revenu par heure de nettoyage.
 
-## 2. Gestion de l'Hôtel
+---
+
+## 2. Service Réception (Hôtel)
 
 Cet espace vous permet de suivre l'occupation journalière.
 
@@ -33,33 +38,65 @@ Cet espace vous permet de suivre l'occupation journalière.
   1. Une tâche de nettoyage dans le calendrier de l'Entretien.
   2. Une déduction automatique des produits d'entretien dans les stocks.
   3. Une mise à jour du planning de rotation.
-
-## 3. Point de Vente (Restaurant & Bar)
-
-L'interface de vente et restauration (POS).
-
-- **Enregistrer une vente** : Appuyez sur la catégorie (`Bar`, `Cocktails`, `Cuisine`), sélectionnez le produit depuis la liste, de saisir la quantité, et le système calcule le prix total.
-- **Service Entretien (Nouveau)** :
-  - **Calendrier de Rotation** : Visualisez les tâches par date avec barres de progression.
-  - **Allocation Fournitures** : Suivez la consommation en temps réel et les prévisions à J+7.
-  - **Validation** : Une fois la chambre propre, validez la tâche pour libérer la chambre dans les statistiques.
-
-## 4. Gestion RH (Ressources Humaines)
-
-- **Assigner une Garde** : Enregistrez le personnel, sa fonction (ex: Réception), et **son shift (Jour ou Nuit)**.
-- **Calculs Temps Réel** : Les heures validées par les employés sont compilées en "Hs Prestées". Celles-ci doivent idéalement couvrir les "Hs Nécessaires" agrégées par vos entrées d'Hôtel et de Cuisine.
-- Le module affichera des alertes urgentes si par exemple aucun technicien n'est enregistré de nuit à la Réception.
-
-## 5. Comptabilité (Finance)
-
-Gérez les entrées de caisse additionnelles ou les sorties/Dépenses de votre entreprise à l'exception de l'inventaire qui est automatique.
-- Les dépenses opérationnelles affectent votre Profit Net de manière transparente.
-
-## 6. Stock & Amortissements
-L'ERP différencie désormais les actifs (Amortissements à long terme) et les consommables quotidiens.
-- **Bar & Consommables** : Consultez les entrées de stock, le volume vendu, et le restant. Un signalement `⚠️ Stock Bas` apparaît pour tout article passant sous les 20% restants de son volume initial !
-- **Restocker** : Entrez simplement le nom de l'article pour rajouter du volume dans votre inventaire.
+- **📥 Télécharger Rapport** : Rapport PDF filtrable par période.
 
 ---
 
-*L'application est conçue pour fonctionner avec connectivité en temps réel. Pour toute demande de support technique supplémentaire, veuillez vous référer à votre intégrateur agréé OVRG.*
+## 3. Service Bar (Restaurant & POS)
+
+L'interface de vente et restauration (POS).
+
+- **Enregistrer une vente** : Sélectionnez la catégorie (`Bar`, `Cocktails`, `Cuisine`), choisissez le produit, saisissez la quantité.
+- **Intégration d'Inventaire** : La vente déduit **automatiquement** le stock des consommables.
+
+---
+
+## 4. Service Entretien
+
+- **Calendrier de Rotation** : Visualisez les tâches par date avec barres de progression.
+- **Allocation Fournitures** : Consommation en temps réel et prévisions à J+7.
+- **Validation** : Une fois la chambre propre, validez la tâche pour libérer le statut.
+- **📥 Télécharger Rapport** : Rapport PDF filtrable par période.
+
+---
+
+## 5. Gestion RH (Ressources Humaines)
+
+- **Assigner une Garde** : Enregistrez le personnel, sa fonction et **son shift (Jour ou Nuit)**.
+- **Calculs Temps Réel** : Les heures prestées doivent couvrir les heures nécessaires agrégées par l'Hôtel et la Cuisine.
+- **Alertes de Couverture** : Notifications si un poste n'est pas couvert de nuit.
+- **📥 Télécharger Rapport** : Rapport PDF filtrable par période.
+
+---
+
+## 6. Stock & Amortissements
+
+- **Bar & Consommables** : Stock, volume vendu, restant. Alerte `⚠️ Stock Bas` sous 20%.
+- **Bon de Commande (PDF)** : Génération automatique pour articles en rupture.
+- **📥 Télécharger Rapport** : Rapport PDF filtrable par période.
+
+---
+
+## 7. Comptabilité (Finance)
+
+- Saisie des revenus annexes et dépenses opérationnelles.
+- **Exporter Bilan Comptable (CSV)** : Export complet du registre comptable.
+- **📥 Télécharger Rapport** : Rapport PDF filtrable par période.
+
+---
+
+## 8. Rapports Téléchargeables (Nouveau v2.1)
+
+Chaque section dispose d'un panneau **« Télécharger Rapport »** offrant :
+
+- **Filtrage par période** :
+  - `Jour` — Dernières 24 heures
+  - `Semaine` — 7 derniers jours
+  - `Mois` — 30 derniers jours
+  - `Tout` — Historique complet
+- **Génération PDF** : Rapport formaté avec tableau, totaux et branding Efficience Hotel.
+- **Partage** : Le PDF peut être partagé, imprimé ou sauvegardé directement depuis l'appareil.
+
+---
+
+*Efficience Hotel ERP v2.1 — Propulsé par OVRG Apparel & Intelligence — 2026*

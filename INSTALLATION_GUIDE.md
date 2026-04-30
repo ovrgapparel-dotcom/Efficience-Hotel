@@ -1,6 +1,6 @@
-# Efficience Hotel ERP - Guide d'Installation & Déploiement
+# Efficience Hotel ERP v2.1 - Guide d'Installation & Déploiement
 
-Ce pack contient toutes les instructions nécessaires pour installer, configurer et déployer le système Efficience Hotel ERP.
+Ce pack contient toutes les instructions nécessaires pour installer, configurer et déployer le système Efficience Hotel ERP v2.1, incluant le moteur IA cross-départemental et les rapports PDF téléchargeables.
 
 ## 1. Prérequis Système
 - **Node.js** : v18 ou supérieur recommandé.

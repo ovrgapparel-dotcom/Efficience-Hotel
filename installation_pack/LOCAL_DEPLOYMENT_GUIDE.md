@@ -1,4 +1,4 @@
-# Guide d'Installation Totale - Efficience Hotel ERP v2.0 (Premium)
+# Guide d'Installation Totale - Efficience Hotel ERP v2.1 (Premium)
 
 Ce pack contient tout le nécessaire pour déployer l'ERP en local dans un environnement client sécurisé.
 

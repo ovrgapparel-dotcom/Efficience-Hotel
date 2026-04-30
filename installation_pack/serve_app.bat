@@ -1,6 +1,6 @@
 @echo off
 echo ==========================================
-echo   EFFICIENCE HOTEL ERP v2.0 - DEPLOY LOCAL
+echo   EFFICIENCE HOTEL ERP v2.1 - DEPLOY LOCAL
 echo ==========================================
 echo Chargement de l'intelligence hôtelière...
 echo.
