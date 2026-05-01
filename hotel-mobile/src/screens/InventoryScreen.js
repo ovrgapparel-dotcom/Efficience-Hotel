@@ -30,6 +30,7 @@ export default function InventoryScreen() {
   const [consNom, setConsNom] = useState('');
   const [consCategory, setConsCategory] = useState('Bar');
   const [consQte, setConsQte] = useState('');
+  const [consPrix, setConsPrix] = useState('');
 
   const submitActif = () => {
     if (!nom || !valeurInitiale) return;
@@ -39,8 +40,8 @@ export default function InventoryScreen() {
 
   const submitConsumable = () => {
     if (!consNom || !consQte) return;
-    addConsumableRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom: consNom, categorie: consCategory, qte: parseInt(consQte, 10), sold: 0 });
-    setConsNom(''); setConsQte('');
+    addConsumableRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom: consNom, categorie: consCategory, qte: parseInt(consQte, 10), sold: 0, prix: Number(consPrix) || 0 });
+    setConsNom(''); setConsQte(''); setConsPrix('');
   };
 
   const generatePurchaseOrder = async () => {
@@ -142,7 +143,10 @@ export default function InventoryScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Quantité à Ajouter" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consQte} onChangeText={setConsQte} />
+            <View style={{flexDirection: 'row', gap: 10}}>
+              <TextInput style={[styles.input, { flex: 1, color: colors.text, borderColor: colors.border }]} placeholder="Quantité à Ajouter" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consQte} onChangeText={setConsQte} />
+              <TextInput style={[styles.input, { flex: 1, color: colors.text, borderColor: colors.border }]} placeholder="Prix unitaire (Optionnel)" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consPrix} onChangeText={setConsPrix} />
+            </View>
             <TouchableOpacity style={[styles.button, { backgroundColor: colors.secondary }]} onPress={submitConsumable}>
               <Text style={styles.buttonText}>Restocker</Text>
             </TouchableOpacity>
@@ -182,7 +186,7 @@ export default function InventoryScreen() {
               <View key={item.id} style={[styles.itemRow, { borderBottomColor: colors.border }]}>
                 <View style={{ flex: 2 }}>
                   <Text style={[styles.itemText, { color: colors.text, fontSize: 14 }]}>{item.nom}</Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 10 }}>{item.categorie}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 10 }}>{item.categorie} {item.prix ? `• ${item.prix} FCFA` : ''}</Text>
                   {isLow && <Text style={{ color: '#dc3545', fontSize: 10, fontWeight: 'bold' }}>⚠️ Stock Bas</Text>}
                 </View>
                 <Text style={[{flex: 1, textAlign: 'center', color: colors.text}]}>{item.qte}</Text>

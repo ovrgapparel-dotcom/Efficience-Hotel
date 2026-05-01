@@ -65,11 +65,12 @@ export const DataProvider = ({ children }) => {
 
         // Use custom initial array if absolutely empty
         const defaultConsumables = [
-          { id: 'b1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Bière', categorie: 'Bar', qte: 200, sold: 0 },
-          { id: 'v1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Vin', categorie: 'Bar', qte: 50, sold: 0 },
-          { id: 'bt1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Bouteille VIP', categorie: 'Bar', qte: 30, sold: 0 },
-          { id: 'c1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Cocktails', categorie: 'Bar', qte: 150, sold: 0 },
-          { id: 'r1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Repas Cuisine', categorie: 'Alimentaire', qte: 100, sold: 0 }
+          { id: 'b1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Bière', categorie: 'Bar', qte: 200, sold: 0, prix: 1200 },
+          { id: 'v1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Vin', categorie: 'Bar', qte: 50, sold: 0, prix: 10000 },
+          { id: 'bt1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Bouteille VIP', categorie: 'Bar', qte: 30, sold: 0, prix: 35000 },
+          { id: 'c1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Cocktails', categorie: 'Bar', qte: 150, sold: 0, prix: 3500 },
+          { id: 'r1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Repas Cuisine', categorie: 'Alimentaire', qte: 100, sold: 0, prix: 4000 },
+          { id: 'n1', date: new Date().toLocaleDateString('fr-FR'), nom: 'Kit Nettoyage', categorie: 'Nettoyage', qte: 50, sold: 0, prix: 0 }
         ];
 
         if (consumables) {
@@ -140,6 +141,9 @@ export const DataProvider = ({ children }) => {
     let newData = [...consumablesData];
     if (existingIndex >= 0) {
       newData[existingIndex].qte += (Number(row.qte) || 0);
+      if (row.prix !== undefined && row.prix !== 0) {
+         newData[existingIndex].prix = row.prix;
+      }
     } else {
       newData = [row, ...consumablesData];
     }

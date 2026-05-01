@@ -8,28 +8,32 @@ import OnboardingModal from '../components/OnboardingModal';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function RestaurantScreen() {
-  const { restaurantData, addRestoRow: addRestaurantRow, addPOSSale, removeDataRow } = useContext(DataContext);
+  const { restaurantData, addRestoRow: addRestaurantRow, addPOSSale, removeDataRow, consumablesData } = useContext(DataContext);
   const { userRole } = useContext(AuthContext);
   const { colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
-  const [saleCategory, setSaleCategory] = useState('Bar'); // Bar, Cocktails, Cuisine
+  const [saleCategory, setSaleCategory] = useState('Bar');
   
-  const CATALOG = {
-    Bar: [
-      { id: 'b1', nom: 'Bière', prix: 1200 },
-      { id: 'v1', nom: 'Vin', prix: 10000 },
-      { id: 'bt1', nom: 'Bouteille VIP', prix: 35000 }
-    ],
-    Cocktails: [
-      { id: 'c1', nom: 'Cocktails', prix: 3500 }
-    ],
-    Cuisine: [
-      { id: 'r1', nom: 'Repas Cuisine', prix: 4000 }
-    ]
-  };
+  // Transform consumables data into dynamic catalog (ignore anything categorized as 'Nettoyage')
+  const DYNAMIC_CATALOG = consumablesData.reduce((acc, item) => {
+    if (item.categorie === 'Nettoyage') return acc;
+    const cat = item.categorie === 'Alimentaire' ? 'Cuisine' : item.categorie;
+    if (!acc[cat]) acc[cat] = [];
+    // Ensure we don't duplicate names in the catalog list for the picker
+    if (!acc[cat].find(c => c.nom === item.nom)) {
+       acc[cat].push({ nom: item.nom, prix: item.prix || 0 });
+    }
+    return acc;
+  }, {});
 
-  const [selectedProduct, setSelectedProduct] = useState(CATALOG.Bar[0]);
+  // Fallback defaults if inventory holds nothing mapping to pos yet
+  if (!DYNAMIC_CATALOG['Bar']) DYNAMIC_CATALOG['Bar'] = [{ nom: 'Vide', prix: 0 }];
+  if (!DYNAMIC_CATALOG['Cuisine']) DYNAMIC_CATALOG['Cuisine'] = [{ nom: 'Vide', prix: 0 }];
+
+  const availableCategories = Object.keys(DYNAMIC_CATALOG).sort();
+
+  const [selectedProduct, setSelectedProduct] = useState(DYNAMIC_CATALOG['Bar'][0]);
   const [quantite, setQuantite] = useState('1');
   const [isCustom, setIsCustom] = useState(false);
   const [customNom, setCustomNom] = useState('');
@@ -37,7 +41,7 @@ export default function RestaurantScreen() {
 
   const onCategoryChange = (cat) => {
     setSaleCategory(cat);
-    setSelectedProduct(CATALOG[cat][0]);
+    setSelectedProduct(DYNAMIC_CATALOG[cat] ? DYNAMIC_CATALOG[cat][0] : null);
     setIsCustom(false);
   };
 
@@ -106,8 +110,8 @@ export default function RestaurantScreen() {
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.sectionHeader, { color: colors.secondary }]}>Enregistrer une Vente POS</Text>
 
-        <View style={styles.pickerRow}>
-          {['Bar', 'Cocktails', 'Cuisine'].map(cat => (
+        <View style={styles.catTabs}>
+          {availableCategories.map(cat => (
             <TouchableOpacity key={cat} style={[styles.chip, saleCategory === cat && { backgroundColor: colors.primary }]} onPress={() => onCategoryChange(cat)}>
               <Text style={{ color: saleCategory === cat ? '#fff' : colors.textMuted }}>{cat}</Text>
             </TouchableOpacity>
@@ -116,9 +120,9 @@ export default function RestaurantScreen() {
 
         <Text style={{color: colors.text, marginBottom: 4, fontSize: 13}}>Sélectionner le Produit :</Text>
         <View style={styles.pickerRow}>
-          {CATALOG[saleCategory].map(prod => (
-            <TouchableOpacity key={prod.nom} style={[styles.chip, !isCustom && selectedProduct.nom === prod.nom && { backgroundColor: colors.secondary }]} onPress={() => { setSelectedProduct(prod); setIsCustom(false); }}>
-              <Text style={{ color: !isCustom && selectedProduct.nom === prod.nom ? '#fff' : colors.textMuted }}>{prod.nom}</Text>
+          {DYNAMIC_CATALOG[saleCategory]?.map(prod => (
+            <TouchableOpacity key={prod.nom} style={[styles.chip, !isCustom && selectedProduct?.nom === prod.nom && { backgroundColor: colors.secondary }]} onPress={() => { setSelectedProduct(prod); setIsCustom(false); }}>
+              <Text style={{ color: !isCustom && selectedProduct?.nom === prod.nom ? '#fff' : colors.textMuted }}>{prod.nom}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={[styles.chip, isCustom && { backgroundColor: colors.secondary }]} onPress={() => setIsCustom(true)}>
@@ -141,7 +145,7 @@ export default function RestaurantScreen() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
             <Text style={{color: colors.text}}>Total Estimé:</Text>
             <Text style={{color: colors.primary, fontSize: 18, fontWeight: 'bold'}}>
-              {(parseInt(quantite||0) * (isCustom ? parseInt(customPrix||0) : selectedProduct.prix)).toLocaleString()} FCFA
+              {(parseInt(quantite||0) * (isCustom ? parseInt(customPrix||0) : (selectedProduct?.prix || 0))).toLocaleString()} FCFA
             </Text>
         </View>
 
