@@ -98,7 +98,7 @@ export const generateHotelReport = ({ roomsData, restaurantData, hrData, finance
     <div class="kpi-card"><div class="label">EBITDA</div><div class="value">${EBITDA.toLocaleString()} CFA</div></div>
     <div class="kpi-card" style="border-left-color: ${Marge >= 25 ? '#1a6b3c' : Marge < 0 ? '#d9534f' : '#f0ad4e'};"><div class="label">Marge EBITDA</div><div class="value">${Marge} %</div></div>
     <div class="kpi-card"><div class="label">Taux d'Occup.</div><div class="value">${tauxOcc} %</div></div>
-    <div class="kpi-card" style="border-left-color: ${foodCost <= 30 ? '#1a6b3c' : '#d9534f'};"><div class="label">Food Cost</div><div class="value">${foodCost} %</div></div>
+    <div class="kpi-card" style="border-left-color: ${foodCost <= 30 ? '#1a6b3c' : '#d9534f'};"><div class="label">Ratio Matière</div><div class="value">${foodCost} %</div></div>
     <div class="kpi-card"><div class="label">Coûts RH</div><div class="value">${Couts_RH.toLocaleString()} CFA</div></div>
   </div>
 

@@ -1,13 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { DataContext } from '../context/DataContext';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import KPI from '../components/KPI';
 import OnboardingModal from '../components/OnboardingModal';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function RestaurantScreen() {
-  const { restaurantData, addRestaurantRow, addPOSSale } = useContext(DataContext);
+  const { restaurantData, addRestoRow: addRestaurantRow, addPOSSale, removeDataRow } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -29,30 +31,49 @@ export default function RestaurantScreen() {
 
   const [selectedProduct, setSelectedProduct] = useState(CATALOG.Bar[0]);
   const [quantite, setQuantite] = useState('1');
+  const [isCustom, setIsCustom] = useState(false);
+  const [customNom, setCustomNom] = useState('');
+  const [customPrix, setCustomPrix] = useState('');
 
   const onCategoryChange = (cat) => {
     setSaleCategory(cat);
     setSelectedProduct(CATALOG[cat][0]);
+    setIsCustom(false);
   };
 
   const submit = () => {
     if (!quantite || parseInt(quantite) <= 0) return;
     const qte = parseInt(quantite);
-    const totalRev = qte * selectedProduct.prix;
+    
+    let prodNom = '';
+    let prodPrix = 0;
+    
+    if (isCustom) {
+      if (!customNom || !customPrix) return;
+      prodNom = customNom;
+      prodPrix = parseInt(customPrix);
+    } else {
+      prodNom = selectedProduct.nom;
+      prodPrix = selectedProduct.prix;
+    }
+    
+    const totalRev = qte * prodPrix;
 
     // Save strictly to the restaurant/sales data
     addRestaurantRow({
       id: Date.now().toString(),
       date: new Date().toLocaleDateString('fr-FR'),
       service: saleCategory,
-      produit: selectedProduct.nom,
+      produit: prodNom,
       quantite: qte,
       ventes: totalRev
     });
 
     // Deduct stock specifically
-    addPOSSale(selectedProduct.nom, qte);
+    addPOSSale(prodNom, qte);
     setQuantite('1');
+    setCustomNom('');
+    setCustomPrix('');
   };
 
   const totalVentes = restaurantData.reduce((acc, row) => acc + (row.ventes || 0), 0);
@@ -96,18 +117,32 @@ export default function RestaurantScreen() {
         <Text style={{color: colors.text, marginBottom: 4, fontSize: 13}}>Sélectionner le Produit :</Text>
         <View style={styles.pickerRow}>
           {CATALOG[saleCategory].map(prod => (
-            <TouchableOpacity key={prod.nom} style={[styles.chip, selectedProduct.nom === prod.nom && { backgroundColor: colors.secondary }]} onPress={() => setSelectedProduct(prod)}>
-              <Text style={{ color: selectedProduct.nom === prod.nom ? '#fff' : colors.textMuted }}>{prod.nom}</Text>
+            <TouchableOpacity key={prod.nom} style={[styles.chip, !isCustom && selectedProduct.nom === prod.nom && { backgroundColor: colors.secondary }]} onPress={() => { setSelectedProduct(prod); setIsCustom(false); }}>
+              <Text style={{ color: !isCustom && selectedProduct.nom === prod.nom ? '#fff' : colors.textMuted }}>{prod.nom}</Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity style={[styles.chip, isCustom && { backgroundColor: colors.secondary }]} onPress={() => setIsCustom(true)}>
+            <Text style={{ color: isCustom ? '#fff' : colors.textMuted }}>+ Produit Personnalisé</Text>
+          </TouchableOpacity>
         </View>
+
+        {isCustom && (
+          <View style={{marginBottom: 10}}>
+            <Text style={{color: colors.text, marginBottom: 4, fontSize: 13}}>Nom du Produit:</Text>
+            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Produit Personnel..." placeholderTextColor={colors.textMuted} value={customNom} onChangeText={setCustomNom} />
+            <Text style={{color: colors.text, marginBottom: 4, fontSize: 13}}>Prix Unitaire (FCFA):</Text>
+            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Prix" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={customPrix} onChangeText={setCustomPrix} />
+          </View>
+        )}
 
         <Text style={{color: colors.text, marginBottom: 4, fontSize: 13}}>Quantité :</Text>
         <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Qté" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={quantite} onChangeText={setQuantite} />
         
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
             <Text style={{color: colors.text}}>Total Estimé:</Text>
-            <Text style={{color: colors.primary, fontSize: 18, fontWeight: 'bold'}}>{(parseInt(quantite||0) * selectedProduct.prix).toLocaleString()} FCFA</Text>
+            <Text style={{color: colors.primary, fontSize: 18, fontWeight: 'bold'}}>
+              {(parseInt(quantite||0) * (isCustom ? parseInt(customPrix||0) : selectedProduct.prix)).toLocaleString()} FCFA
+            </Text>
         </View>
 
         <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={submit}>
@@ -124,7 +159,16 @@ export default function RestaurantScreen() {
               <Text style={[styles.itemText, { color: colors.text }]}>{item.quantite}x {item.produit}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 12 }}>{item.service} • {item.date}</Text>
             </View>
-            <Text style={[styles.itemValue, { color: colors.primary }]}>+ {item.ventes?.toLocaleString()} FCFA</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[styles.itemValue, { color: colors.primary, marginRight: userRole === 'MANAGER' ? 15 : 0 }]}>+ {item.ventes?.toLocaleString()} FCFA</Text>
+              {userRole === 'MANAGER' && (
+                <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer cette vente POS ?")) removeDataRow('restaurant', item.id);
+                }}>
+                  <FontAwesome5 name="trash" size={14} color="#e94560" />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         )}
       />

@@ -39,6 +39,7 @@ export const DataProvider = ({ children }) => {
   const [consumablesData, setConsumablesData] = useState([]);
   const [clientsData, setClientsData] = useState([]);
   const [housekeepingData, setHousekeepingData] = useState([]);
+  const [systemSettings, setSystemSettings] = useState({ roomsCapacity: 40, restaurantCapacity: 80 });
 
   useEffect(() => {
     const loadData = async () => {
@@ -58,6 +59,9 @@ export const DataProvider = ({ children }) => {
         if (hr) setHrData(JSON.parse(hr));
         if (finance) setFinanceData(JSON.parse(finance));
         if (inventory) setInventoryData(JSON.parse(inventory));
+
+        const storedSettings = await storage.getItem('@systemSettings');
+        if (storedSettings) setSystemSettings(JSON.parse(storedSettings));
 
         // Use custom initial array if absolutely empty
         const defaultConsumables = [
@@ -132,10 +136,10 @@ export const DataProvider = ({ children }) => {
 
   const addConsumableRow = async (row) => {
     // If it exists, accumulate it securely, otherwise add new
-    const existingIndex = consumablesData.findIndex(c => c.nom.toLowerCase() === row.nom.toLowerCase());
+    const existingIndex = consumablesData.findIndex(c => c?.nom?.toLowerCase() === row?.nom?.toLowerCase());
     let newData = [...consumablesData];
     if (existingIndex >= 0) {
-      newData[existingIndex].qte += row.qte;
+      newData[existingIndex].qte += (Number(row.qte) || 0);
     } else {
       newData = [row, ...consumablesData];
     }
@@ -146,14 +150,18 @@ export const DataProvider = ({ children }) => {
   // Add POS sale method to deduct sold numbers in consumables
   const addPOSSale = async (productName, quantity) => {
     let newData = [...consumablesData];
-    const index = newData.findIndex(c => c.nom.toLowerCase() === productName.toLowerCase());
+    const index = newData.findIndex(c => c?.nom?.toLowerCase() === productName?.toLowerCase());
     if (index >= 0) {
-      // we store 'sold' inline or we just calculate it! 
-      // let's just track it natively inside consumablesData as 'sold'
-      newData[index].sold = (newData[index].sold || 0) + quantity;
+      newData[index].sold = (newData[index].sold || 0) + (Number(quantity) || 0);
       setConsumablesData(newData);
       await storage.setItem('@consumables', JSON.stringify(newData));
     }
+  };
+
+  const updateSettings = async (newSettings) => {
+    const updated = { ...systemSettings, ...newSettings };
+    setSystemSettings(updated);
+    await storage.setItem('@systemSettings', JSON.stringify(updated));
   };
 
   // Operational Deductions (Generic fallbacks if needed)
@@ -211,7 +219,47 @@ export const DataProvider = ({ children }) => {
     setFinanceData([]);
     setInventoryData([]);
     setConsumablesData([]);
-    await storage.removeItems(['@rooms', '@restaurant', '@hr', '@finance', '@inventory', '@consumables']);
+    setHousekeepingData([]);
+    setClientsData([]);
+    await storage.removeItems(['@rooms', '@restaurant', '@hr', '@finance', '@inventory', '@consumables', '@housekeeping', '@clients']);
+  };
+
+  const removeDataRow = async (dataType, id) => {
+    if(dataType === 'rooms') {
+      const newData = roomsData.filter(d => d.id !== id);
+      setRoomsData(newData);
+      await storage.setItem('@rooms', JSON.stringify(newData));
+    }
+    if(dataType === 'restaurant') {
+      const newData = restaurantData.filter(d => d.id !== id);
+      setRestaurantData(newData);
+      await storage.setItem('@restaurant', JSON.stringify(newData));
+    }
+    if(dataType === 'hr') {
+      const newData = hrData.filter(d => d.id !== id);
+      setHrData(newData);
+      await storage.setItem('@hr', JSON.stringify(newData));
+    }
+    if(dataType === 'finance') {
+      const newData = financeData.filter(d => d.id !== id);
+      setFinanceData(newData);
+      await storage.setItem('@finance', JSON.stringify(newData));
+    }
+    if(dataType === 'inventory') {
+      const newData = inventoryData.filter(d => d.id !== id);
+      setInventoryData(newData);
+      await storage.setItem('@inventory', JSON.stringify(newData));
+    }
+    if(dataType === 'housekeeping') {
+      const newData = housekeepingData.filter(d => d.id !== id);
+      setHousekeepingData(newData);
+      await storage.setItem('@housekeeping', JSON.stringify(newData));
+    }
+    if(dataType === 'consumables') {
+      const newData = consumablesData.filter(d => d.id !== id);
+      setConsumablesData(newData);
+      await storage.setItem('@consumables', JSON.stringify(newData));
+    }
   };
 
   return (
@@ -224,9 +272,10 @@ export const DataProvider = ({ children }) => {
       consumablesData, addConsumableRow, addPOSSale,
       clientsData, addClientRow,
       housekeepingData, addHousekeepingTask, validateHousekeepingTask,
+      systemSettings, updateSettings,
       remainingNettoyage,
       monthlyInventoryCost,
-      resetAllData
+      resetAllData, removeDataRow
     }}>
       {children}
     </DataContext.Provider>

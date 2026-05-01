@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "../services/NotificationService";
@@ -15,11 +15,39 @@ import AppFooter from "../components/AppFooter";
 const BANNER_DASHBOARD = require("../../assets/banners/banner_dashboard.png");
 
 export default function DashboardScreen({ navigation }) {
-  const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData } = useContext(DataContext);
+  const { roomsData, restaurantData, hrData, financeData, inventoryData, monthlyInventoryCost, resetAllData, systemSettings, updateSettings } = useContext(DataContext);
   const { isDark, toggleTheme, colors } = useContext(ThemeContext);
   const { logout, pins, updatePin } = useContext(AuthContext);
   const [helpVisible, setHelpVisible] = useState(false);
   const [securityVisible, setSecurityVisible] = useState(false);
+  const [selectedKpi, setSelectedKpi] = useState(null);
+
+  const kpiDefinitions = {
+    "CA Total": {
+      formula: "Revenus Hébergement + Revenus Restaurant",
+      desc: "Chiffre d'Affaires Total. Il s'agit du total consolidé de toutes les ventes de l'établissement (Nuitées + Consommations Bar/Restaurant)."
+    },
+    "EBITDA": {
+      formula: "(CA Total + Autres Revenus) - (Coûts RH + Coûts + Amortissement Stock)",
+      desc: "Bénéfice Brut d'Exploitation (Earnings Before Interest, Taxes, Depreciation, and Amortization). Indique la rentabilité opérationnelle brute de l'hôtel avant les charges financières."
+    },
+    "Marge OP": {
+      formula: "(EBITDA / CA Total) * 100",
+      desc: "Marge Opérationnelle en pourcentage. Représente la part du chiffre d'affaires convertie en bénéfice réel de fonctionnement."
+    },
+    "Taux d'Occup.": {
+      formula: "(Chambres Occupées / Chambres Totales configurées) * 100",
+      desc: "Taux d'Occupation. Exprime la densité de remplissage de l'hôtel par rapport à la capacité définie."
+    },
+    "Ratio Matière": {
+      formula: "(Cout Matières / Ventes Restaurant) * 100",
+      desc: "Autrefois appelé Food Cost. Indique le pourcentage des revenus de restauration qui est investi dans l'achat brut de nourriture et de boissons."
+    },
+    "Amort. Stock": {
+      formula: "Somme de (Valeur Initiale de l'article / Durée d'Amortissement en mois)",
+      desc: "Dépréciation mensuelle estimée du mobilier, de l'équipement lourd et des fournitures."
+    }
+  };
 
   const chartFade = useRef(new Animated.Value(0)).current;
   const chartScale = useRef(new Animated.Value(0.95)).current;
@@ -62,9 +90,9 @@ export default function DashboardScreen({ navigation }) {
   }, [financeData, inventoryData]);
 
   const CA_Hebergement = roomsData.reduce((acc, row) => acc + (row.total || 0), 0);
-  const totalChambres = 40; 
+  const totalChambres = parseInt(systemSettings.roomsCapacity, 10) || 40; 
   const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
-  const Taux_Occ = ((chambresOccupees / totalChambres) * 100).toFixed(1);
+  const Taux_Occ = totalChambres > 0 ? ((chambresOccupees / totalChambres) * 100).toFixed(1) : 0;
 
   const CA_Restaurant = restaurantData.reduce((acc, row) => acc + (row.ventes || 0), 0);
   const Cout_Mat = restaurantData.reduce((acc, row) => acc + (row.coutMatiere || 0), 0);
@@ -83,7 +111,7 @@ export default function DashboardScreen({ navigation }) {
   // Alerts logic
   const alerts = [];
   if (parseFloat(Taux_Occ) > 85) alerts.push({ msg: "Occupation Exceptionnelle : Optimisez les tarifs", type: "success" });
-  if (parseFloat(Food_Cost) > 35) alerts.push({ msg: "Food Cost Élevé : Vérifiez les stocks cuisine", type: "warning" });
+  if (parseFloat(Food_Cost) > 35) alerts.push({ msg: "Ratio Matière Élevé : Vérifiez les stocks cuisine", type: "warning" });
   if (EBITDA < 0 && CA_Total > 0) alerts.push({ msg: "Alerte Rentabilité : EBITDA Négatif", type: "danger" });
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -124,12 +152,12 @@ export default function DashboardScreen({ navigation }) {
       )}
 
       <View style={styles.kpiContainer}>
-        <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} delay={100} />
-        <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} delay={200} />
-        <KPI title="Marge OP" value={`${Marge} %`} delay={300} />
-        <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} delay={400} />
-        <KPI title="Food Cost" value={`${Food_Cost} %`} delay={500} />
-        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} delay={600} />
+        <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} delay={100} onPress={() => setSelectedKpi("CA Total")} />
+        <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} delay={200} onPress={() => setSelectedKpi("EBITDA")} />
+        <KPI title="Marge OP" value={`${Marge} %`} delay={300} onPress={() => setSelectedKpi("Marge OP")} />
+        <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} delay={400} onPress={() => setSelectedKpi("Taux d'Occup.")} />
+        <KPI title="Ratio Matière" value={`${Food_Cost} %`} delay={500} onPress={() => setSelectedKpi("Ratio Matière")} />
+        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} delay={600} onPress={() => setSelectedKpi("Amort. Stock")} />
       </View>
 
       <Text style={[styles.chartTitle, { color: colors.text }]}>Répartition du Chiffre d'Affaires</Text>
@@ -175,7 +203,9 @@ export default function DashboardScreen({ navigation }) {
 
       {securityVisible && (
         <View style={[styles.securityPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={{ color: colors.text, fontWeight: 'bold', marginBottom: 15 }}>Configuration des Accès Services</Text>
+          <Text style={{ color: colors.text, fontWeight: 'bold', marginBottom: 15, fontSize: 16 }}>Configuration Système & Sécurité</Text>
+          
+          <Text style={{ color: colors.secondary, fontWeight: 'bold', marginTop: 10, marginBottom: 5 }}>🔑 Accès Services (PINs)</Text>
           {Object.keys(pins).map(role => (
             <View key={role} style={styles.pinRow}>
               <Text style={{ color: colors.textMuted, flex: 1 }}>{role}:</Text>
@@ -188,7 +218,28 @@ export default function DashboardScreen({ navigation }) {
               />
             </View>
           ))}
-          <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 10 }}>💡 Les modifications sont enregistrées automatiquement.</Text>
+
+          <Text style={{ color: colors.secondary, fontWeight: 'bold', marginTop: 25, marginBottom: 5 }}>🏢 Capacités Opérationnelles</Text>
+          <View style={styles.pinRow}>
+             <Text style={{ color: colors.textMuted, flex: 1 }}>Chambres Totales :</Text>
+             <TextInput 
+                style={[styles.pinDisplay, { color: colors.text, borderColor: colors.border }]}
+                defaultValue={String(systemSettings.roomsCapacity)}
+                keyboardType="numeric"
+                onChangeText={(val) => updateSettings({ roomsCapacity: val })}
+              />
+          </View>
+          <View style={styles.pinRow}>
+             <Text style={{ color: colors.textMuted, flex: 1 }}>Couverts Restaurant :</Text>
+             <TextInput 
+                style={[styles.pinDisplay, { color: colors.text, borderColor: colors.border }]}
+                defaultValue={String(systemSettings.restaurantCapacity)}
+                keyboardType="numeric"
+                onChangeText={(val) => updateSettings({ restaurantCapacity: val })}
+              />
+          </View>
+
+          <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 15 }}>💡 Les modifications sont enregistrées automatiquement globalement.</Text>
         </View>
       )}
 
@@ -202,7 +253,11 @@ export default function DashboardScreen({ navigation }) {
         />
       </View>
 
-      <TouchableOpacity style={[styles.resetBtn, { borderColor: isDark ? "#ff6681" : "red" }]} onPress={() => resetAllData()}>
+      <TouchableOpacity style={[styles.resetBtn, { borderColor: isDark ? "#ff6681" : "red" }]} onPress={() => {
+        if(window.confirm("Êtes-vous sûr de vouloir réinitialiser toute la base de données (Hôtel, Resto, RH, Finance, Stock, Entretien, Clients) ? Cette action est irréversible.")) {
+          resetAllData();
+        }
+      }}>
           <Text style={[styles.resetText, { color: isDark ? "#ff6681" : "red" }]}>Réinitialiser la Base de Données</Text>
       </TouchableOpacity>
 
@@ -216,6 +271,37 @@ export default function DashboardScreen({ navigation }) {
       
       <View style={{height: 70}} />
       <AppFooter />
+
+      {/* KPI Explanation Modal */}
+      {selectedKpi && kpiDefinitions[selectedKpi] && (
+        <Modal animationType="fade" transparent={true} visible={true} onRequestClose={() => setSelectedKpi(null)}>
+          <View style={styles.modalBg}>
+            <View style={[styles.modalBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.modalHeader}>
+                <FontAwesome5 name="info-circle" size={24} color={colors.primary} />
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{selectedKpi}</Text>
+              </View>
+              
+              <Text style={{ color: colors.secondary, fontWeight: 'bold', marginTop: 15, fontSize: 13 }}>EXPLICATION</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 4, lineHeight: 20 }}>
+                {kpiDefinitions[selectedKpi].desc}
+              </Text>
+              
+              <Text style={{ color: colors.secondary, fontWeight: 'bold', marginTop: 20, fontSize: 13 }}>FORMULE DE CALCUL</Text>
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8, marginTop: 6, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ color: colors.text, fontSize: 13, fontFamily: 'monospace' }}>
+                  {kpiDefinitions[selectedKpi].formula}
+                </Text>
+              </View>
+
+              <TouchableOpacity style={[styles.modalCloseBtn, { backgroundColor: colors.primary }]} onPress={() => setSelectedKpi(null)}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
     </ScrollView>
   );
 }
@@ -236,5 +322,10 @@ const styles = StyleSheet.create({
   testNotifyBtn: { padding: 15, borderRadius: 8, marginTop: 15, borderWidth: 1, alignItems: "center", flexDirection: 'row', justifyContent: 'center' },
   securityPanel: { marginTop: 10, padding: 20, borderRadius: 12, borderWidth: 1 },
   pinRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  pinDisplay: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, width: 80, textAlign: 'center', fontWeight: 'bold' }
+  pinDisplay: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, width: 80, textAlign: 'center', fontWeight: 'bold' },
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 20 },
+  modalBox: { padding: 25, borderRadius: 16, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)', paddingBottom: 15 },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', marginLeft: 12 },
+  modalCloseBtn: { marginTop: 30, padding: 15, borderRadius: 8, alignItems: 'center' }
 });

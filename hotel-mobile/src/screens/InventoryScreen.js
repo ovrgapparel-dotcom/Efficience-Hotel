@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { DataContext } from '../context/DataContext';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import OnboardingModal from '../components/OnboardingModal';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -12,8 +13,9 @@ import ReportDownloader from '../components/ReportDownloader';
 export default function InventoryScreen() {
   const { 
     inventoryData, addInventoryRow, 
-    consumablesData, addConsumableRow 
+    consumablesData, addConsumableRow, removeDataRow
   } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -109,7 +111,16 @@ export default function InventoryScreen() {
                   <Text style={[styles.itemText, { color: colors.text }]}>{item.nom}</Text>
                   <Text style={{ color: colors.textMuted, fontSize: 12 }}>{item.categorie} • {item.date}</Text>
                 </View>
-                <Text style={[styles.itemValue, { color: colors.primary }]}>{item.valeurInitiale?.toLocaleString()} CFA</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={[styles.itemValue, { color: colors.primary, marginRight: userRole === 'MANAGER' ? 15 : 0 }]}>{item.valeurInitiale?.toLocaleString()} CFA</Text>
+                  {userRole === 'MANAGER' && (
+                    <TouchableOpacity onPress={() => {
+                      if(window.confirm("Supprimer cet actif ?")) removeDataRow('inventory', item.id);
+                    }}>
+                      <FontAwesome5 name="trash" size={14} color="#e94560" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             )}
           />
@@ -177,6 +188,13 @@ export default function InventoryScreen() {
                 <Text style={[{flex: 1, textAlign: 'center', color: colors.text}]}>{item.qte}</Text>
                 <Text style={[{flex: 1, textAlign: 'center', color: colors.text}]}>{sold}</Text>
                 <Text style={[{flex: 1, textAlign: 'center', fontWeight: 'bold'}, isLow ? {color: '#dc3545'} : {color: '#28a745'} ]}>{remaining}</Text>
+                {userRole === 'MANAGER' && (
+                  <TouchableOpacity onPress={() => {
+                    if(window.confirm("Supprimer ce consommable ?")) removeDataRow('consumables', item.id);
+                  }} style={{ marginLeft: 10 }}>
+                    <FontAwesome5 name="trash" size={14} color="#e94560" />
+                  </TouchableOpacity>
+                )}
               </View>
             );
           })}

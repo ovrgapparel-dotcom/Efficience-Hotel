@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
+import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
@@ -12,7 +13,8 @@ import ReportDownloader from "../components/ReportDownloader";
 const BANNER = require("../../assets/banners/banner_hebergement.png");
 
 export default function HotelScreen() {
-  const { roomsData, addRoomRow, addHousekeepingTask } = useContext(DataContext);
+  const { roomsData, addRoomRow, addHousekeepingTask, systemSettings, removeDataRow } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -57,10 +59,10 @@ export default function HotelScreen() {
   const uniqueClients = new Set(roomsData.map(r => r.client).filter(c => c)).size;
   const dms = uniqueClients > 0 ? (totalNuits / uniqueClients).toFixed(1) : 0;
   
-  const TOTAL_CHAMBRES = 40; 
+  const totalChambres = parseInt(systemSettings?.roomsCapacity, 10) || 40;
   const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
-  const tauxOcc = ((chambresOccupees / TOTAL_CHAMBRES) * 100).toFixed(1);
-  const revpar = TOTAL_CHAMBRES > 0 ? (totalRevenu / TOTAL_CHAMBRES).toFixed(0) : 0;
+  const tauxOcc = totalChambres > 0 ? ((chambresOccupees / totalChambres) * 100).toFixed(1) : 0;
+  const revpar = totalChambres > 0 ? (totalRevenu / totalChambres).toFixed(0) : 0;
   const totalCleaningMins = roomsData.reduce((acc, row) => acc + (row.cleaningTime || 0), 0);
   const totalCleaningHours = (totalCleaningMins / 60).toFixed(1);
 
@@ -152,6 +154,7 @@ export default function HotelScreen() {
             <Text style={[styles.col, { color: colors.text }]}>Px/Nuit</Text>
             <Text style={[styles.col, { color: colors.text }]}>Nuits</Text>
             <Text style={[styles.col, { color: colors.text }]}>Total (FCFA)</Text>
+            {userRole === 'MANAGER' && <Text style={[styles.col, { color: colors.text, width: 50 }]}>Action</Text>}
           </View>
           {roomsData.map(row => (
             <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
@@ -162,6 +165,13 @@ export default function HotelScreen() {
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.prixNuit}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.nuits}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.total}</Text>
+              {userRole === 'MANAGER' && (
+                <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer cette nuitée ?")) removeDataRow('rooms', row.id);
+                }} style={[styles.col, { width: 50, alignItems: 'center' }]}>
+                  <FontAwesome5 name="trash" size={14} color="#e94560" />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>

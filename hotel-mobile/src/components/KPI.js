@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { Text, StyleSheet, Animated } from "react-native";
+import { Text, StyleSheet, Animated, TouchableOpacity } from "react-native";
 import { ThemeContext } from "../context/ThemeContext";
 
-export default function KPI({ title, value, delay = 0 }) {
+export default function KPI({ title, value, delay = 0, onPress }) {
   const { isDark, colors } = useContext(ThemeContext);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -15,23 +15,25 @@ export default function KPI({ title, value, delay = 0 }) {
   }, [delay]);
 
   return (
-    <Animated.View style={[styles.card, {
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-      borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-      opacity: fadeAnim,
-      transform: [{ translateY: slideAnim }],
-      borderTopColor: colors.gold,
-      shadowColor: colors.gold,
-    }]}>
-      <Text style={[styles.title, { color: colors.textMuted }]}>{title}</Text>
-      <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
-    </Animated.View>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ width: "48%" }}>
+      <Animated.View style={[styles.card, {
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        borderTopColor: colors.gold,
+        shadowColor: colors.gold,
+      }]}>
+        <Text style={[styles.title, { color: colors.textMuted }]}>{title}</Text>
+        <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
+      </Animated.View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: "48%",
+    width: "100%",
     padding: 15,
     borderRadius: 12,
     borderWidth: 1.5,

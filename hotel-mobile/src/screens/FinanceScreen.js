@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
+import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
@@ -14,7 +15,8 @@ import ReportDownloader from '../components/ReportDownloader';
 const BANNER = require("../../assets/banners/banner_finance.png");
 
 export default function FinanceScreen() {
-  const { financeData, addFinanceRow, roomsData = [], restaurantData = [] } = useContext(DataContext);
+  const { financeData, addFinanceRow, roomsData = [], restaurantData = [], removeDataRow } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -135,6 +137,7 @@ export default function FinanceScreen() {
             <Text style={[styles.col, { color: colors.text }]}>Description</Text>
             <Text style={[styles.col, { color: colors.text }]}>Montant</Text>
             <Text style={[styles.col, { color: colors.text }]}>Paiement</Text>
+            {userRole === 'MANAGER' && <Text style={[styles.col, { color: colors.text, width: 50 }]}>Action</Text>}
           </View>
           {financeData.map(row => (
             <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
@@ -144,6 +147,13 @@ export default function FinanceScreen() {
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.description}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.montant}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.paiement}</Text>
+              {userRole === 'MANAGER' && (
+                <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer cette transaction ?")) removeDataRow('finance', row.id);
+                }} style={[styles.col, { width: 50, alignItems: 'center' }]}>
+                  <FontAwesome5 name="trash" size={14} color="#e94560" />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>

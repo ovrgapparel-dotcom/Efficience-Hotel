@@ -4,14 +4,17 @@
 
 export const AIEngine = {
   analyze: (data) => {
-    const { roomsData, restaurantData, hrData, financeData, housekeepingData, consumablesData } = data;
+    const { roomsData, restaurantData, hrData, financeData, housekeepingData, consumablesData, systemSettings } = data;
     const insights = [];
+
+    // System Capacities
+    const roomsCapacity = parseInt(systemSettings?.roomsCapacity, 10) || 40;
+    const restaurantCapacity = parseInt(systemSettings?.restaurantCapacity, 10) || 50;
 
     // ── Base Metrics ──
     const CA_Hebergement = roomsData.reduce((acc, row) => acc + (row.total || 0), 0);
-    const totalChambres = 40;
     const chambresOccupees = new Set(roomsData.map(r => r.chambreNo)).size;
-    const tauxOcc = totalChambres > 0 ? (chambresOccupees / totalChambres) * 100 : 0;
+    const tauxOcc = roomsCapacity > 0 ? (chambresOccupees / roomsCapacity) * 100 : 0;
     const totalNuits = roomsData.reduce((acc, row) => acc + (row.nuits || 0), 0);
 
     const CA_Restaurant = restaurantData.reduce((acc, row) => acc + (row.ventes || 0), 0);
@@ -196,17 +199,32 @@ export const AIEngine = {
       if (foodCost > 33) {
         insights.push({
           title: "Fuite de Trésorerie F&B",
-          text: `Food Cost de ${foodCost.toFixed(1)}% — gaspillage ou mauvais calibrage des portions (standard: 28-30%).`,
+          text: `Ratio Matière de ${foodCost.toFixed(1)}% — gaspillage ou mauvais calibrage des portions (standard: 28-30%).`,
           severity: "bad", icon: "utensils",
           action: "Auditer la cuisine"
         });
       } else {
         insights.push({
           title: "Contrôle Qualité F&B",
-          text: `Food Cost maîtrisé (${foodCost.toFixed(1)}%). Portions bien calibrées.`,
+          text: `Ratio Matière maîtrisé (${foodCost.toFixed(1)}%). Portions bien calibrées.`,
           severity: "good", icon: "utensils",
           action: "Valider les menus"
         });
+      }
+
+      // Check restaurant capacity vs sales volume
+      const totalRepasVendus = restaurantData.filter(d => d.categorie === 'Cuisine').reduce((acc, row) => acc + (row.quantite || 1), 0);
+      if (totalRepasVendus > 0) {
+        // Evaluate density of covers based on capacity
+        const rotationRate = totalRepasVendus / restaurantCapacity;
+        if (rotationRate > 1.5) {
+          insights.push({
+             title: "Surcapacité Restaurant (Rotation Élevée)",
+             text: `Le restaurant a effectué ${rotationRate.toFixed(1)} rotations aujourd'hui (${totalRepasVendus} couverts pour une capacité de ${restaurantCapacity}). Envisager d'augmenter le personnel en salle.`,
+             severity: "good", icon: "chair",
+             action: "Ajuster personnel salle"
+          });
+        }
       }
     }
 

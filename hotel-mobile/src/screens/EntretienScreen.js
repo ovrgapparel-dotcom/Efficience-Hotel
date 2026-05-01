@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { DataContext } from '../context/DataContext';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { FontAwesome5 } from '@expo/vector-icons';
 import DepartmentBanner from '../components/DepartmentBanner';
@@ -8,7 +9,8 @@ import KPI from '../components/KPI';
 import ReportDownloader from '../components/ReportDownloader';
 
 export default function EntretienScreen() {
-  const { housekeepingData, validateHousekeepingTask, consumablesData, roomsData } = useContext(DataContext);
+  const { housekeepingData, validateHousekeepingTask, consumablesData, roomsData, removeDataRow } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { colors } = useContext(ThemeContext);
 
   const pendingTasks = housekeepingData.filter(t => !t.completed);
@@ -109,9 +111,18 @@ export default function EntretienScreen() {
               {t.nuits && <Text style={{ color: colors.secondary, fontSize: 12 }}>🌙 {t.nuits} nuit(s)</Text>}
             </View>
           </View>
-          <TouchableOpacity onPress={() => validateHousekeepingTask(t.id)} style={[styles.checkBtn, { backgroundColor: '#28a745' }]}>
-            <FontAwesome5 name="check" size={18} color="#fff" />
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <TouchableOpacity onPress={() => validateHousekeepingTask(t.id)} style={[styles.checkBtn, { backgroundColor: '#28a745' }]}>
+              <FontAwesome5 name="check" size={18} color="#fff" />
+            </TouchableOpacity>
+            {userRole === 'MANAGER' && (
+               <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer cette tâche d'entretien ?")) removeDataRow('housekeeping', t.id);
+               }} style={[styles.checkBtn, { backgroundColor: '#e94560' }]}>
+                 <FontAwesome5 name="trash" size={14} color="#fff" />
+               </TouchableOpacity>
+            )}
+          </View>
         </View>
       ))}
       {pendingTasks.length === 0 && (
@@ -151,7 +162,16 @@ export default function EntretienScreen() {
             <Text style={{ color: colors.text, fontWeight: 'bold' }}>Chambre {t.roomNo} — Nettoyée</Text>
             <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t.date} • {t.cleaningTime}min • {t.suppliesUsed || 1} fourniture(s)</Text>
           </View>
-          <FontAwesome5 name="check-circle" size={20} color="#28a745" />
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <FontAwesome5 name="check-circle" size={20} color="#28a745" style={{ marginRight: userRole === 'MANAGER' ? 15 : 0 }} />
+            {userRole === 'MANAGER' && (
+               <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer cette tâche d'entretien ?")) removeDataRow('housekeeping', t.id);
+               }}>
+                 <FontAwesome5 name="trash" size={14} color="#e94560" />
+               </TouchableOpacity>
+            )}
+          </View>
         </View>
       ))}
       <View style={{ height: 40 }} />

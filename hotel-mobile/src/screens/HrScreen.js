@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { DataContext } from "../context/DataContext";
+import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import KPI from "../components/KPI";
 import DynamicButton from "../components/DynamicButton";
@@ -12,7 +13,8 @@ import ReportDownloader from "../components/ReportDownloader";
 const BANNER = require("../../assets/banners/banner_rh.png");
 
 export default function HrScreen() {
-  const { hrData, addHrRow, roomsData, restaurantData } = useContext(DataContext);
+  const { hrData, addHrRow, roomsData, restaurantData, removeDataRow } = useContext(DataContext);
+  const { userRole } = useContext(AuthContext);
   const { isDark, colors } = useContext(ThemeContext);
 
   const [helpVisible, setHelpVisible] = useState(false);
@@ -153,6 +155,7 @@ export default function HrScreen() {
             <Text style={[styles.col, { color: colors.text }]}>Heures</Text>
             <Text style={[styles.col, { color: colors.text }]}>Taux</Text>
             <Text style={[styles.col, { color: colors.text }]}>Salaire J.</Text>
+            {userRole === 'MANAGER' && <Text style={[styles.col, { color: colors.text, width: 50 }]}>Action</Text>}
           </View>
           {hrData.map(row => (
             <View key={row.id} style={[styles.tableRow, { borderColor: colors.border }]}>
@@ -163,6 +166,13 @@ export default function HrScreen() {
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.heures}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.taux}</Text>
               <Text style={[styles.col, { color: colors.textMuted }]}>{row.salaire}</Text>
+              {userRole === 'MANAGER' && (
+                <TouchableOpacity onPress={() => {
+                  if(window.confirm("Supprimer ce pointage ?")) removeDataRow('hr', row.id);
+                }} style={[styles.col, { width: 50, alignItems: 'center' }]}>
+                  <FontAwesome5 name="trash" size={14} color="#e94560" />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>
