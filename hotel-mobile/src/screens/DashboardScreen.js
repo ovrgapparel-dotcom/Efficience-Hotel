@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Platform } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "../services/NotificationService";
@@ -99,14 +99,37 @@ export default function DashboardScreen({ navigation }) {
   const Food_Cost = CA_Restaurant > 0 ? ((Cout_Mat / CA_Restaurant) * 100).toFixed(1) : 0;
 
   const CA_Total = CA_Hebergement + CA_Restaurant;
+  const Taxes_TVA = CA_Total * 0.18; // 18% Standard Tax Model
 
   const Couts_RH = hrData.reduce((acc, row) => acc + (row.salaire || 0), 0);
   const Autres_Revenus = financeData.filter(d => d.type === "Revenu").reduce((acc, row) => acc + (row.montant || 0), 0);
   const Autres_Couts = financeData.filter(d => d.type === "Coût").reduce((acc, row) => acc + (row.montant || 0), 0);
 
-  // EBITDA calculates Revenue - (Payroll + Inventory Amort + Op Costs)
-  const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts - monthlyInventoryCost;
+  // EBITDA calculates Revenue - (Payroll + Inventory Amort + Op Costs + Tax)
+  const EBITDA = CA_Total + Autres_Revenus - Couts_RH - Autres_Couts - monthlyInventoryCost - Taxes_TVA;
   const Marge = CA_Total > 0 ? ((EBITDA / CA_Total) * 100).toFixed(1) : 0;
+
+  const exportData = () => {
+    try {
+      const backup = {
+        roomsData, restaurantData, hrData, financeData, inventoryData, 
+        systemSettings, date: new Date().toISOString()
+      };
+      const jsonStr = JSON.stringify(backup, null, 2);
+      if (Platform.OS === 'web') {
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `efficience_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch(err) {
+      console.warn("Backup failed", err);
+    }
+  };
 
   // Alerts logic
   const alerts = [];
@@ -119,6 +142,18 @@ export default function DashboardScreen({ navigation }) {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={{ height: 10 }} />
+
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 15, paddingHorizontal: 5 }}>
+        <TouchableOpacity 
+          style={[styles.logoutBtn, { borderColor: colors.border, backgroundColor: 'rgba(255,100,100,0.1)' }]} 
+          onPress={() => {
+            if(window.confirm("Verrouiller la session en cours ?")) logout();
+          }}
+        >
+          <FontAwesome5 name="lock" size={12} color="#ff6b6b" />
+          <Text style={{ marginLeft: 8, color: '#ff6b6b', fontWeight: 'bold', fontSize: 13 }}>Verrouiller (PIN)</Text>
+        </TouchableOpacity>
+      </View>
 
       <OnboardingModal 
         visible={helpVisible} 
@@ -153,11 +188,11 @@ export default function DashboardScreen({ navigation }) {
 
       <View style={styles.kpiContainer}>
         <KPI title="CA Total" value={`${CA_Total.toLocaleString()} CFA`} delay={100} onPress={() => setSelectedKpi("CA Total")} />
-        <KPI title="EBITDA" value={`${EBITDA.toLocaleString()} CFA`} delay={200} onPress={() => setSelectedKpi("EBITDA")} />
+        <KPI title="TVA (18%)" value={`- ${Taxes_TVA.toLocaleString()} CFA`} delay={150} onPress={null} />
+        <KPI title="EBITDA Net" value={`${EBITDA.toLocaleString()} CFA`} delay={200} onPress={() => setSelectedKpi("EBITDA")} />
         <KPI title="Marge OP" value={`${Marge} %`} delay={300} onPress={() => setSelectedKpi("Marge OP")} />
         <KPI title="Taux d'Occup." value={`${Taux_Occ} %`} delay={400} onPress={() => setSelectedKpi("Taux d'Occup.")} />
         <KPI title="Ratio Matière" value={`${Food_Cost} %`} delay={500} onPress={() => setSelectedKpi("Ratio Matière")} />
-        <KPI title="Amort. Stock" value={`${Math.round(monthlyInventoryCost).toLocaleString()} CFA`} delay={600} onPress={() => setSelectedKpi("Amort. Stock")} />
       </View>
 
       <Text style={[styles.chartTitle, { color: colors.text }]}>Répartition du Chiffre d'Affaires</Text>
@@ -240,6 +275,15 @@ export default function DashboardScreen({ navigation }) {
           </View>
 
           <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 15 }}>💡 Les modifications sont enregistrées automatiquement globalement.</Text>
+
+          <TouchableOpacity style={[styles.resetBtn, { borderColor: colors.primary, marginTop: 25 }]} onPress={() => {
+            if(window.confirm("Sauvegarder l'entièreté du système local vers un fichier (Backup JSON) ?")) {
+              exportData();
+            }
+          }}>
+              <FontAwesome5 name="download" size={16} color={colors.primary} style={{marginBottom: 5}}/>
+              <Text style={{ color: colors.primary, fontWeight: "bold" }}>Export de Sécurité (Backup Web)</Text>
+          </TouchableOpacity>
         </View>
       )}
 

@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import * as Print from 'expo-print';
 import { DataContext } from '../context/DataContext';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -78,6 +79,22 @@ export default function RestaurantScreen() {
     setQuantite('1');
     setCustomNom('');
     setCustomPrix('');
+  };
+
+  const printTicket = async (sale) => {
+    try {
+      const html = `<html><head><style>body { font-family: monospace; font-size: 14px; margin: 0; padding: 10px; width: 80mm; } .center { text-align: center; } .bold { font-weight: bold; } table { width: 100%; border-top: 1px dashed #000; border-bottom: 1px dashed #000; margin: 10px 0; padding: 10px 0; } td { padding: 4px 0; }</style></head><body><div class="center bold" style="font-size: 18px">EFFICIENCE HOTEL</div><div class="center" style="margin-bottom: 10px">${sale.date}</div><table><tr><td>${sale.quantite}x ${sale.produit}</td><td style="text-align:right">${sale.ventes} CFA</td></tr></table><div style="text-align: right; margin-top: 10px;"><b>TOTAL: ${sale.ventes} CFA</b></div><hr style="border: 1px dashed #000; margin-top: 15px;"/><div class="center">Merci de votre visite!</div><div class="center" style="font-size: 10px; margin-top: 5px;">Powered by Efficience ERP</div></body></html>`;
+      if (Platform.OS === 'web') {
+        const win = window.open('', '_blank', 'width=300,height=500');
+        win.document.write(html);
+        win.document.close();
+        setTimeout(() => { win.print(); win.close(); }, 500);
+      } else {
+        await Print.printAsync({ html });
+      }
+    } catch(e) {
+      console.warn("Print error", e);
+    }
   };
 
   const totalVentes = restaurantData.reduce((acc, row) => acc + (row.ventes || 0), 0);
@@ -164,7 +181,10 @@ export default function RestaurantScreen() {
               <Text style={{ color: colors.textMuted, fontSize: 12 }}>{item.service} • {item.date}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[styles.itemValue, { color: colors.primary, marginRight: userRole === 'MANAGER' ? 15 : 0 }]}>+ {item.ventes?.toLocaleString()} FCFA</Text>
+              <Text style={[styles.itemValue, { color: colors.primary, marginRight: 15 }]}>+ {item.ventes?.toLocaleString()} FCFA</Text>
+              <TouchableOpacity onPress={() => printTicket(item)} style={{ marginRight: userRole === 'MANAGER' ? 15 : 0 }}>
+                <FontAwesome5 name="print" size={14} color={colors.secondary} />
+              </TouchableOpacity>
               {userRole === 'MANAGER' && (
                 <TouchableOpacity onPress={() => {
                   if(window.confirm("Supprimer cette vente POS ?")) removeDataRow('restaurant', item.id);
