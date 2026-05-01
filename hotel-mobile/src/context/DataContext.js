@@ -39,6 +39,7 @@ export const DataProvider = ({ children }) => {
   const [consumablesData, setConsumablesData] = useState([]);
   const [clientsData, setClientsData] = useState([]);
   const [housekeepingData, setHousekeepingData] = useState([]);
+  const [stockHistoryData, setStockHistoryData] = useState([]);
   const [systemSettings, setSystemSettings] = useState({ roomsCapacity: 40, restaurantCapacity: 80 });
 
   useEffect(() => {
@@ -53,12 +54,14 @@ export const DataProvider = ({ children }) => {
         const clients = await storage.getItem('@clients');
         const housekeeping = await storage.getItem('@housekeeping');
         const posSales = await storage.getItem('@posSales');
+        const stockHistory = await storage.getItem('@stockHistory');
 
         if (rooms) setRoomsData(JSON.parse(rooms));
         if (resto) setRestaurantData(JSON.parse(resto));
         if (hr) setHrData(JSON.parse(hr));
         if (finance) setFinanceData(JSON.parse(finance));
         if (inventory) setInventoryData(JSON.parse(inventory));
+        if (stockHistory) setStockHistoryData(JSON.parse(stockHistory));
 
         const storedSettings = await storage.getItem('@systemSettings');
         if (storedSettings) setSystemSettings(JSON.parse(storedSettings));
@@ -133,6 +136,14 @@ export const DataProvider = ({ children }) => {
     const newData = [row, ...inventoryData];
     setInventoryData(newData);
     await storage.setItem('@inventory', JSON.stringify(newData));
+
+    // Also push to history
+    const historyRow = { ...row, logType: 'ACTIF_INTAKE', logDate: new Date().toISOString() };
+    setStockHistoryData(prev => {
+        const newHistory = [historyRow, ...prev];
+        storage.setItem('@stockHistory', JSON.stringify(newHistory));
+        return newHistory;
+    });
   };
 
   const addConsumableRow = async (row) => {
@@ -149,6 +160,19 @@ export const DataProvider = ({ children }) => {
     }
     setConsumablesData(newData);
     await storage.setItem('@consumables', JSON.stringify(newData));
+
+    // Also push to history
+    const historyRow = { 
+      id: Date.now().toString() + Math.floor(Math.random()*100), 
+      ...row, 
+      logType: 'CONSUMABLE_INTAKE', 
+      logDate: new Date().toISOString() 
+    };
+    setStockHistoryData(prev => {
+        const newHistory = [historyRow, ...prev];
+        storage.setItem('@stockHistory', JSON.stringify(newHistory));
+        return newHistory;
+    });
   };
 
   // Add POS sale method to deduct sold numbers in consumables
@@ -225,7 +249,8 @@ export const DataProvider = ({ children }) => {
     setConsumablesData([]);
     setHousekeepingData([]);
     setClientsData([]);
-    await storage.removeItems(['@rooms', '@restaurant', '@hr', '@finance', '@inventory', '@consumables', '@housekeeping', '@clients']);
+    setStockHistoryData([]);
+    await storage.removeItems(['@rooms', '@restaurant', '@hr', '@finance', '@inventory', '@consumables', '@housekeeping', '@clients', '@stockHistory']);
   };
 
   const removeDataRow = async (dataType, id) => {
@@ -276,6 +301,7 @@ export const DataProvider = ({ children }) => {
       consumablesData, addConsumableRow, addPOSSale,
       clientsData, addClientRow,
       housekeepingData, addHousekeepingTask, validateHousekeepingTask,
+      stockHistoryData,
       systemSettings, updateSettings,
       remainingNettoyage,
       monthlyInventoryCost,

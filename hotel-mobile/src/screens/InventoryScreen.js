@@ -13,7 +13,8 @@ import ReportDownloader from '../components/ReportDownloader';
 export default function InventoryScreen() {
   const { 
     inventoryData, addInventoryRow, 
-    consumablesData, addConsumableRow, removeDataRow
+    consumablesData, addConsumableRow, removeDataRow,
+    stockHistoryData
   } = useContext(DataContext);
   const { userRole } = useContext(AuthContext);
   const { colors } = useContext(ThemeContext);
@@ -25,23 +26,27 @@ export default function InventoryScreen() {
   const [nom, setNom] = useState('');
   const [categorie, setCategorie] = useState('Fournitures');
   const [valeurInitiale, setValeurInitiale] = useState('');
+  const [fournisseurActif, setFournisseurActif] = useState('');
+  const [factureActif, setFactureActif] = useState('');
 
   // Consumables State
   const [consNom, setConsNom] = useState('');
   const [consCategory, setConsCategory] = useState('Bar');
   const [consQte, setConsQte] = useState('');
   const [consPrix, setConsPrix] = useState('');
+  const [fournisseurCons, setFournisseurCons] = useState('');
+  const [factureCons, setFactureCons] = useState('');
 
   const submitActif = () => {
     if (!nom || !valeurInitiale) return;
-    addInventoryRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom, categorie, valeurInitiale: parseFloat(valeurInitiale) });
-    setNom(''); setValeurInitiale('');
+    addInventoryRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom, categorie, valeurInitiale: parseFloat(valeurInitiale), fournisseur: fournisseurActif, facture: factureActif });
+    setNom(''); setValeurInitiale(''); setFournisseurActif(''); setFactureActif('');
   };
 
   const submitConsumable = () => {
     if (!consNom || !consQte) return;
-    addConsumableRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom: consNom, categorie: consCategory, qte: parseInt(consQte, 10), sold: 0, prix: Number(consPrix) || 0 });
-    setConsNom(''); setConsQte(''); setConsPrix('');
+    addConsumableRow({ id: Date.now().toString(), date: new Date().toLocaleDateString('fr-FR'), nom: consNom, categorie: consCategory, qte: parseInt(consQte, 10), sold: 0, prix: Number(consPrix) || 0, fournisseur: fournisseurCons, facture: factureCons });
+    setConsNom(''); setConsQte(''); setConsPrix(''); setFournisseurCons(''); setFactureCons('');
   };
 
   const generatePurchaseOrder = async () => {
@@ -91,7 +96,12 @@ export default function InventoryScreen() {
       {activeTab === 'Actifs' ? (
         <>
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Nom du bien (ex: Matelas, Serviettes)" placeholderTextColor={colors.textMuted} value={nom} onChangeText={setNom} />
+            <Text style={{color: colors.text, marginBottom: 10, fontSize: 16, fontWeight: 'bold'}}>Nouvelle Immobilisation (Actif)</Text>
+
+            <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Nom de l'Équipement</Text>
+            <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: Matelas, Télévision..." placeholderTextColor={colors.textMuted} value={nom} onChangeText={setNom} />
+            
+            <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Type d'Immobilisation</Text>
             <View style={styles.pickerRow}>
               {['Mobilier', 'Équipement', 'Fournitures'].map(cat => (
                 <TouchableOpacity key={cat} style={[styles.chip, categorie === cat && { backgroundColor: colors.primary }]} onPress={() => setCategorie(cat)}>
@@ -99,9 +109,23 @@ export default function InventoryScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Valeur Initiale (CFA)" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={valeurInitiale} onChangeText={setValeurInitiale} />
-            <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={submitActif}>
-              <Text style={styles.buttonText}>Ajouter au Stock (Immobilisation)</Text>
+            
+            <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Valeur d'Achat Totale (CFA)</Text>
+            <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: 250000" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={valeurInitiale} onChangeText={setValeurInitiale} />
+            
+            <View style={{flexDirection: 'row', gap: 10, marginTop: 4}}>
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Fournisseur</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: ORA" placeholderTextColor={colors.textMuted} value={fournisseurActif} onChangeText={setFournisseurActif} />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>N° Facture / Réf</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: FAC-2023-10" placeholderTextColor={colors.textMuted} value={factureActif} onChangeText={setFactureActif} />
+              </View>
+            </View>
+
+            <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary, marginTop: 5 }]} onPress={submitActif}>
+              <Text style={styles.buttonText}>+ Ajouter au Registre</Text>
             </TouchableOpacity>
           </View>
           <FlatList
@@ -134,8 +158,12 @@ export default function InventoryScreen() {
           </View>
 
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={{color: colors.text, marginBottom: 10, fontSize: 16, fontWeight: 'bold'}}>Mise à Jour du Stock (Entrée)</Text>
-            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} placeholder="Article Existant ou Nouveau" placeholderTextColor={colors.textMuted} value={consNom} onChangeText={setConsNom} />
+            <Text style={{color: colors.text, marginBottom: 15, fontSize: 16, fontWeight: 'bold'}}>Mise à Jour du Stock (Entrée)</Text>
+            
+            <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Nom de l'Article</Text>
+            <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: Bière, Jus..." placeholderTextColor={colors.textMuted} value={consNom} onChangeText={setConsNom} />
+            
+            <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Catégorie (Rayon)</Text>
             <View style={styles.pickerRow}>
               {['Bar', 'Alimentaire', 'Nettoyage'].map(cat => (
                 <TouchableOpacity key={cat} style={[styles.chip, consCategory === cat && { backgroundColor: colors.primary }]} onPress={() => setConsCategory(cat)}>
@@ -143,12 +171,35 @@ export default function InventoryScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+            
             <View style={{flexDirection: 'row', gap: 10}}>
-              <TextInput style={[styles.input, { flex: 1, color: colors.text, borderColor: colors.border }]} placeholder="Quantité à Ajouter" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consQte} onChangeText={setConsQte} />
-              <TextInput style={[styles.input, { flex: 1, color: colors.text, borderColor: colors.border }]} placeholder="Prix unitaire (Optionnel)" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consPrix} onChangeText={setConsPrix} />
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Quantité Achetée</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: 50" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consQte} onChangeText={setConsQte} />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Prix de Vente Unitaire</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: 1500 (FCFA)" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={consPrix} onChangeText={setConsPrix} />
+              </View>
             </View>
+
+            <View style={{flexDirection: 'row', gap: 10, marginTop: 4}}>
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>Fournisseur</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: Solibra" placeholderTextColor={colors.textMuted} value={fournisseurCons} onChangeText={setFournisseurCons} />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={{color: colors.text, marginBottom: 4, fontWeight: '600', fontSize: 13}}>N° Facture / Lot</Text>
+                <TextInput style={[styles.formInput, { color: colors.text, borderColor: colors.border }]} placeholder="ex: LOT-098" placeholderTextColor={colors.textMuted} value={factureCons} onChangeText={setFactureCons} />
+              </View>
+            </View>
+
+            <Text style={{color: colors.textMuted, fontSize: 11, marginBottom: 15, fontStyle: 'italic', paddingHorizontal: 4}}>
+              * Info: Lors d'un ajout, le Prix défini ici sert de tarif de vente officiel sur la caisse du Bar.
+            </Text>
+
             <TouchableOpacity style={[styles.button, { backgroundColor: colors.secondary }]} onPress={submitConsumable}>
-              <Text style={styles.buttonText}>Restocker</Text>
+              <Text style={styles.buttonText}>+ Enregistrer / Restocker</Text>
             </TouchableOpacity>
           </View>
 
@@ -202,6 +253,23 @@ export default function InventoryScreen() {
               </View>
             );
           })}
+
+            {stockHistoryData && stockHistoryData.length > 0 && (
+              <View style={{marginTop: 30, padding: 15, backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: 8}}>
+                <Text style={{fontWeight: 'bold', fontSize: 16, marginBottom: 10, color: colors.text}}>Historique des Mouvements (Registre)</Text>
+                {stockHistoryData.slice(0, 5).map((log, idx) => (
+                  <View key={idx} style={{flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)'}}>
+                    <View>
+                      <Text style={{fontSize: 12, fontWeight: 'bold', color: colors.text}}>[{log.logType}] {log.nom}</Text>
+                      <Text style={{fontSize: 10, color: colors.textMuted}}>Fournisseur: {log.fournisseur || 'N/A'} • Réf: {log.facture || 'N/A'}</Text>
+                    </View>
+                    <Text style={{fontSize: 10, color: colors.textMuted}}>{new Date(log.logDate).toLocaleString('fr-FR')}</Text>
+                  </View>
+                ))}
+                {stockHistoryData.length > 5 && <Text style={{fontSize: 10, color: colors.textMuted, marginTop: 8, fontStyle: 'italic'}}>Affichage des 5 dernières entrées...</Text>}
+              </View>
+            )}
+
           <View style={{height: 50}} />
         </ScrollView>
       )}
@@ -217,6 +285,7 @@ const styles = StyleSheet.create({
   tab: { flex: 1, paddingBottom: 10, alignItems: 'center' },
   card: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
   input: { height: 45, borderBottomWidth: 1, marginBottom: 12, paddingHorizontal: 8 },
+  formInput: { height: 45, borderWidth: 1, borderRadius: 8, marginBottom: 12, paddingHorizontal: 12, backgroundColor: 'rgba(0,0,0,0.02)' },
   pickerRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   chip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, borderWidth: 1, borderColor: '#ccc' },
   button: { height: 45, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
