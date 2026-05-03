@@ -4,7 +4,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { ThemeContext } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext";
 
-const LOGO_OFFICIAL = require("../../assets/logo_eh_official.png");
+const LOGO_OFFICIAL = require("../../assets/logo_eh_classic.png");
 const { width, height } = Dimensions.get("window");
 
 // Floating icon config for animated background
